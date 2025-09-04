@@ -134,32 +134,55 @@
   </div>
 
   <script>
-    /* ==================== CONFIG ==================== */
-    const CONFIG = {
-      clubName: 'Sporting Villette',
-      logoUrl: 'logo.png',
-      webhookUrl: 'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
-      maxSizeMB: 10,
-      renameUploads: true,
+/* ==================== CONFIG ==================== */
+const CONFIG = {
+  clubName: 'Sporting Villette',
+  logoUrl: 'logo.png',
 
-      // CSV publié (Fichier > Partager > "Quiconque disposant du lien" + Fichier > Publier sur le Web > CSV)
-      gsheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
+  // ⬇️ Mets ici l'URL CSV *publiée* de ta feuille (Fichier > Publier sur le web > CSV)
+ gsheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
 
-      // Cartographie des colonnes du CSV
-      fields: { match_id:'Code Gesthand', date:'Date', categorie:'Catégorie', championnat:'Championnat', equipe1:'Eq1', equipe2:'Eq2' },
+  // ⬇️ Ton webhook Make
+ webhookUrl: 'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
 
-      // Alias du club pour déterminer Victoire/Défaite
-      clubAliases: ['Sporting Villette','Villette Genas','Est Lyonnais','Lyon Est Handball'],
+  maxSizeMB: 10,
+  renameUploads: true,
 
-      // Fenêtre d’affichage des matchs
-      dateWindow: { pastDays: 5, futureDays: 2 },
+  // Les en-têtes EXACTS de ta feuille (tu viens de me les donner)
+  fields: {
+    match_id: 'Code Gesthand',
+    date: 'Date',
+    categorie: 'Catégorie',
+    championnat: 'Championnat',
+    equipe1: 'Eq1',
+    equipe2: 'Eq2'
+  },
 
-      // Détection des matchs déjà clôturés avec photo de fin
-      winLoseHeader: 'WinLose', // la colonne qui contiendra "20e" en cours ou "Victoire/Défaite/Match Nul" en final
-      photoFinalHeaders: ['Photo fin','Photo finale','Photo fin de match','Photo_end','Photo fin URL','Photo_finale','Photo fin match'],
-      photoAnyHeaders: ['Photo','Lien photo','URL photo','Photo match','Photo finale','Image','Photo_end']
-    };
-    /* ================================================= */
+  // Pour calculer Victoire/Défaite (met les variantes de ton club)
+  clubAliases: ['Sporting Villette','Entente Villette Genas','Entente Lyon Est Handball'],
+
+  // Fenêtre d’affichage (tu peux élargir si besoin)
+  dateWindow: { pastDays: 5, futureDays: 7 },
+
+  // La colonne qui recevra "20e" pendant le match ou "Victoire/Défaite/Match Nul" en final
+  winLoseHeader: 'WinLose',
+
+  // Colonnes qui signalent qu'une *photo de fin de match* existe déjà
+  // (si l'une est remplie ET que WinLose indique un résultat final, on masque la rencontre)
+  photoFinalHeaders: [
+    // si tu as une colonne dédiée type "Photo fin", mets-la en premier, sinon laisse vide
+  ],
+
+  // Toute autre colonne "photo/lien image" à considérer (inclut tes colonnes)
+  photoAnyHeaders: [
+    'PhotoEq',           // ← ta colonne
+    'Story résultat',    // ← ta colonne
+    'Lien Story',        // parfois un lien peut compter
+    'Photo', 'Lien photo', 'URL photo', 'Photo match', 'Image', 'Photo_end'
+  ]
+};
+/* ================================================= */
+
 
     // Identité visuelle
     (function initBrand(){
