@@ -16,7 +16,7 @@
     }
     html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:480px;margin:16px auto;padding:0 12px}
+    .wrap{max-width:520px;margin:16px auto;padding:0 12px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px}
     header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
     header img{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
@@ -52,7 +52,7 @@
     .ok{color:var(--ok)}
     .err{color:var(--err)}
     footer{margin-top:12px;text-align:center}
-    @media (min-width:520px){ .row{grid-template-columns:1fr 1fr} }
+    @media (min-width:560px){ .row{grid-template-columns:1fr 1fr} }
   </style>
 </head>
 <body>
@@ -66,14 +66,12 @@
         </div>
       </header>
 
-      <!-- Sélecteur de rencontre -->
       <section id="picker" class="matches">
         <h3>Choisir une rencontre</h3>
         <div id="matchesMsg" class="muted">Chargement des matchs…</div>
         <div id="matchesList" class="list" aria-live="polite"></div>
       </section>
 
-      <!-- Détail de la rencontre sélectionnée -->
       <div id="selected" class="selected" hidden>
         <div class="sel-top">
           <div class="sel-teams" id="selTeams"></div>
@@ -94,3 +92,337 @@
           <label><span id="label_ext">Score extérieur</span>
             <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
           </label>
+        </div>
+
+        <label>Type de saisie</label>
+        <div class="switch" role="group" aria-label="Type de saisie">
+          <label class="pill"><input type="radio" name="etat" id="etat_en_cours" value="en_cours" checked> En cours</label>
+          <label class="pill"><input type="radio" name="etat" id="etat_termine" value="termine"> Match terminé</label>
+        </div>
+
+        <div id="zone_en_cours" class="row-2">
+          <label>Minute (ex: 20)
+            <input type="number" name="minute" id="minute" inputmode="numeric" min="0" max="200" placeholder="ex: 20">
+          </label>
+          <label>Aperçu statut (auto)
+            <input type="text" id="statut_preview" readonly placeholder="20e ou résultat final" />
+          </label>
+        </div>
+
+        <!-- Champs transmis -->
+        <input type="hidden" name="statut" id="statut">
+        <input type="hidden" name="WinLose" id="WinLose">
+
+        <div class="dropzone" id="dz">
+          <label>Photo du match (facultatif)
+            <input type="file" name="photo" id="photo" accept="image/*">
+          </label>
+          <div class="muted">Glissez une image, prenez une photo ou choisissez depuis la galerie.</div>
+          <img id="preview" alt="Aperçu photo" />
+        </div>
+
+        <input type="hidden" name="form_secret" id="form_secret" value="CHANGE-MOI">
+
+        <div class="actions">
+          <button type="submit" id="btn">Envoyer</button>
+          <div class="msg muted" id="msg" role="status" aria-live="polite"></div>
+        </div>
+      </form>
+
+      <footer class="muted">Astuce : générez un QR code vers cette page. La liste affiche automatiquement les matchs de J-5 à J+2 et masque ceux déjà clôturés avec photo.</footer>
+    </div>
+  </div>
+
+  <script>
+    /* ==================== CONFIG ==================== */
+    const CONFIG = {
+      clubName: 'Sporting Villette',
+      logoUrl: 'logo.png',
+      webhookUrl: 'https://hook.eu2.make.com/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // ← remplacez par votre webhook Make
+      maxSizeMB: 10,
+      renameUploads: true,
+
+      // CSV publié (Fichier > Partager > "Quiconque disposant du lien" + Fichier > Publier sur le Web > CSV)
+      gsheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/XXX/pub?gid=0&single=true&output=csv', // ← remplacez par votre CSV publié
+
+      // Cartographie des colonnes du CSV
+      fields: { match_id:'Code Gesthand', date:'Date', categorie:'Catégorie', championnat:'Championnat', equipe1:'Eq1', equipe2:'Eq2' },
+
+      // Alias du club pour déterminer Victoire/Défaite
+      clubAliases: ['Sporting Villette','Villette Genas','Est Lyonnais','Lyon Est Handball'],
+
+      // Fenêtre d’affichage des matchs
+      dateWindow: { pastDays: 5, futureDays: 2 },
+
+      // Détection des matchs déjà clôturés avec photo de fin
+      winLoseHeader: 'WinLose', // la colonne qui contiendra "20e" en cours ou "Victoire/Défaite/Match Nul" en final
+      photoFinalHeaders: ['Photo fin','Photo finale','Photo fin de match','Photo_end','Photo fin URL','Photo_finale','Photo fin match'],
+      photoAnyHeaders: ['Photo','Lien photo','URL photo','Photo match','Photo finale','Image','Photo_end']
+    };
+    /* ================================================= */
+
+    // Identité visuelle
+    (function initBrand(){
+      if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName;
+      if (CONFIG.logoUrl){ const img=document.getElementById('clubLogo'); img.src=CONFIG.logoUrl; }
+    })();
+
+    // Utils
+    const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const slugify = s => String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase();
+    const extFrom = (type,fallback) => !type ? (fallback||'jpg') : (type==='image/jpeg'?'jpg': type==='image/png'?'png': type==='image/webp'?'webp': (type==='image/heic'||type==='image/heif')?'heic' : (fallback||'jpg'));
+    function parseDate(val){
+      if(!val) return null; if (val instanceof Date) return val;
+      if (typeof val === 'string'){
+        if (/^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val);
+        const fr = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (fr){ const d=fr[1].padStart(2,'0'), m=fr[2].padStart(2,'0'), y=fr[3]; return new Date(`${y}-${m}-${d}`); }
+      }
+      const d=new Date(val); return isNaN(d)?null:d;
+    }
+    const fmtDate = d => d?d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'}):'';
+    function inWindow(d){
+      const base=new Date(); base.setHours(0,0,0,0);
+      const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5));
+      const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2));
+      return d>=start && d<=end;
+    }
+    function csvToRows(csv){
+      const rows=[]; let cur=[],i=0,field='',inq=false;
+      while(i<csv.length){ const c=csv[i++]; if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } }
+      else if(c===',' && !inq){ cur.push(field); field=''; } else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } }
+      else { field+=c; } }
+      if(field!==''||cur.length){ cur.push(field); rows.push(cur); }
+      return rows.filter(r=>r.length && r.join('').trim()!=='');
+    }
+
+    // DOM refs
+    const matchesMsg = document.getElementById('matchesMsg');
+    const matchesList = document.getElementById('matchesList');
+    const idLine = document.getElementById('idLine');
+    const selectedBox = document.getElementById('selected');
+    const selTeams = document.getElementById('selTeams');
+    const selMeta = document.getElementById('selMeta');
+    const changeBtn = document.getElementById('changeBtn');
+
+    const inputId=document.getElementById('match_id');
+    const labelDom=document.getElementById('label_dom');
+    const labelExt=document.getElementById('label_ext');
+    const sdEl=document.getElementById('score_dom');
+    const seEl=document.getElementById('score_ext');
+
+    const etatEnCours = document.getElementById('etat_en_cours');
+    const etatTermine = document.getElementById('etat_termine');
+    const minuteEl = document.getElementById('minute');
+    const statutPreview = document.getElementById('statut_preview');
+    const statutHidden = document.getElementById('statut');
+    const winLoseHidden = document.getElementById('WinLose');
+
+    // Détection des matchs déjà traités (photo de fin)
+    function isFinalValue(v){
+      const x=norm(v);
+      return ['victoire','defaite','défaite','match nul','matchnul','termine','terminé','final'].some(k=>x.includes(k));
+    }
+    function rowHasFinalPhoto(headersLower, row){
+      // 1) Colonnes explicitement listées comme "photo fin"
+      for(const name of CONFIG.photoFinalHeaders||[]){
+        const idx=headersLower.indexOf(norm(name));
+        if(idx>=0){ const v = String(row[idx]||'').trim(); if(v) return true; }
+      }
+      // 2) Si la ligne est "finale" (WinLose final) ET qu'une des colonnes génériques "photo*" est remplie
+      const wlIdx = headersLower.indexOf(norm(CONFIG.winLoseHeader||'WinLose'));
+      const isFinal = wlIdx>=0 ? isFinalValue(row[wlIdx]) : false;
+      if(isFinal){
+        for(const h of CONFIG.photoAnyHeaders||[]){
+          const i=headersLower.indexOf(norm(h));
+          if(i>=0 && String(row[i]||'').trim()) return true;
+        }
+      }
+      // 3) Heuristique: header contient "photo" ET ("fin" | "final" | "end")
+      for(let i=0;i<headersLower.length;i++){
+        const h=headersLower[i];
+        if(h.includes('photo') && (h.includes('fin') || h.includes('final') || h.includes('end'))){
+          const v = String(row[i]||'').trim();
+          if(v) return true;
+        }
+      }
+      return false;
+    }
+
+    async function loadMatches(){
+      const url=CONFIG.gsheetCsvUrl;
+      if(!url){ matchesMsg.textContent="Configurez CONFIG.gsheetCsvUrl (CSV publié)."; return; }
+      try{
+        matchesMsg.textContent='Chargement…';
+        const res=await fetch(url,{cache:'no-store'});
+        if(!res.ok) throw new Error(`CSV non accessible (HTTP ${res.status})`);
+        const csv=await res.text();
+        const rows=csvToRows(csv);
+        if(!rows.length) throw new Error('CSV vide ou non publié en CSV.');
+        const headers=rows.shift().map(h=>h.trim());
+        const headersLower=headers.map(h=>norm(h));
+        const idx=Object.fromEntries(headers.map((h,i)=>[norm(h),i]));
+        const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,norm(v||'')]));
+        const items=rows.map(r=>({
+          match_id:r[idx[L.match_id]], date:r[idx[L.date]], categorie:r[idx[L.categorie]],
+          championnat:r[idx[L.championnat]], equipe1:r[idx[L.equipe1]], equipe2:r[idx[L.equipe2]], __row:r
+        })).filter(x=>x&&x.match_id);
+
+        const enriched=items
+          .map(x=>({...x,_date:parseDate(x.date), __hasFinalPhoto:rowHasFinalPhoto(headersLower,x.__row)}))
+          .filter(x=>x._date && inWindow(x._date) && !x.__hasFinalPhoto);
+
+        enriched.sort((a,b)=>a._date-b._date);
+        renderMatches(enriched);
+
+        window.__csv_cache = { rows, idx, fields:L, headers, headersLower };
+      }catch(err){
+        console.error(err);
+        matchesMsg.textContent = "Impossible de charger la liste des matchs (CSV). Vous pouvez saisir l'ID manuellement.";
+      }
+    }
+
+    function renderMatches(list){
+      matchesList.innerHTML='';
+      if(!list.length){ matchesMsg.textContent='Aucun match à afficher (hors fenêtre, déjà traité, ou CSV vide).'; return; }
+      matchesMsg.textContent='';
+      const frag=document.createDocumentFragment();
+      list.forEach(m=>{
+        const card=document.createElement('button'); card.type='button'; card.className='match-card';
+        card.innerHTML=`<div class="mc-left">
+            <div class="mc-title">${(m.equipe1||'').trim()} <span class="muted">vs</span> ${(m.equipe2||'').trim()}</div>
+            <div class="mc-sub">${fmtDate(m._date)} · ${m.categorie||''} · ${m.championnat||''}</div>
+          </div>
+          <div class="mc-right muted">${m.match_id}</div>`;
+        card.addEventListener('click',()=>selectMatch(m));
+        frag.appendChild(card);
+      });
+      matchesList.appendChild(frag);
+    }
+
+    function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
+
+    function selectMatch(m){
+      selTeams.textContent = `${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
+      selMeta.textContent = `${fmtDate(m._date)} · ${(m.categorie||'')} · ${(m.championnat||'')}`;
+      selectedBox.hidden = false; idLine.style.display = 'none';
+      inputId.value = m.match_id || '';
+      setTeamLabels(m.equipe1,m.equipe2);
+      etatEnCours.checked = true; etatTermine.checked = false; minuteEl.value = '';
+      updateStatutPreview();
+      document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    changeBtn.addEventListener('click',()=>{
+      selectedBox.hidden=true; idLine.style.display='';
+      inputId.value=''; setTeamLabels('domicile','extérieur');
+      statutHidden.value=''; statutPreview.value=''; winLoseHidden.value='';
+    });
+
+    // Recherche d'équipes par ID si saisi à la main
+    async function lookupTeamsById(id){
+      try{
+        const c=window.__csv_cache; if(!c) return;
+        const F=c.fields; const mi=c.idx[(F.match_id||'')], e1=c.idx[(F.equipe1||'')], e2=c.idx[(F.equipe2||'')];
+        const row=c.rows.find(r=>String(r[mi]).trim()===id.trim());
+        if(row){ setTeamLabels(row[e1],row[e2]); }
+      }catch(e){}
+    }
+
+    (function prefill(){
+      const p=new URLSearchParams(location.search);
+      const id=p.get('match_id'); if(id){ inputId.value=id; }
+      const e1=p.get('eq1'), e2=p.get('eq2'); if(e1||e2) setTeamLabels(e1,e2);
+    })();
+
+    let t=null; inputId.addEventListener('input',()=>{ clearTimeout(t); const id=inputId.value.trim(); if(!id) return; t=setTimeout(()=>lookupTeamsById(id),400); });
+    inputId.addEventListener('blur',()=>{ const id=inputId.value.trim(); if(id) lookupTeamsById(id); });
+
+    const CLUBS=(CONFIG.clubAliases||[]).map(norm);
+    function computeResult(){
+      const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
+      if(Number.isNaN(s1)||Number.isNaN(s2)) return '';
+      if(s1===s2) return 'Match Nul';
+      const eq1=(labelDom.textContent||'').replace(/^Score\s+/,''), eq2=(labelExt.textContent||'').replace(/^Score\s+/,'');
+
+      const isClub1=CLUBS.some(a=>norm(eq1).includes(a));
+      const isClub2=CLUBS.some(a=>norm(eq2).includes(a));
+      if(s1>s2){ if(isClub1) return 'Victoire'; else if(isClub2) return 'Défaite'; else return 'Terminé'; }
+      else { if(isClub2) return 'Victoire'; else if(isClub1) return 'Défaite'; else return 'Terminé'; }
+    }
+
+    function updateStatutPreview(){
+      if(etatEnCours.checked){
+        const m = minuteEl.value ? `${parseInt(minuteEl.value,10)}e` : '';
+        statutPreview.value = m; statutHidden.value = m; winLoseHidden.value = m;
+      }else{
+        const res = computeResult();
+        statutPreview.value = res; statutHidden.value = res; winLoseHidden.value = res;
+      }
+    }
+    sdEl.addEventListener('input', updateStatutPreview);
+    seEl.addEventListener('input', updateStatutPreview);
+    minuteEl.addEventListener('input', updateStatutPreview);
+    etatEnCours.addEventListener('change', updateStatutPreview);
+    etatTermine.addEventListener('change', updateStatutPreview);
+
+    // Charger la liste
+    loadMatches();
+
+    // Drag & drop & preview
+    (function dropZone(){
+      const dz=document.getElementById('dz'); const file=document.getElementById('photo'); const prev=document.getElementById('preview');
+      ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
+      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+      dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
+      file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
+    })();
+
+    // Soumission
+    const form=document.getElementById('f');
+    const msg=document.getElementById('msg');
+    const btn=document.getElementById('btn');
+
+    function complain(s, cls='err'){ msg.textContent=s; msg.className=`msg ${cls}`; }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault(); msg.textContent='';
+      const id=inputId.value.trim(); const sd=sdEl.value; const se=seEl.value;
+      if(!id||sd===''||se===''){ return complain('Merci de compléter tous les champs requis.'); }
+
+      updateStatutPreview();
+
+      if(etatEnCours.checked && !minuteEl.value){ return complain('Indiquez la minute (ex: 20) pour une saisie en cours.'); }
+      if(etatTermine.checked && !statutHidden.value){ return complain('Le résultat ne peut pas être calculé (vérifiez les scores).'); }
+
+      const inputFile=document.getElementById('photo'); const f=inputFile.files[0];
+      if (f && f.size > CONFIG.maxSizeMB*1024*1024){ return complain(`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`); }
+
+      if (f && CONFIG.renameUploads){
+        const ext=extFrom(f.type, f.name.split('.').pop());
+        const renamed=new File([f], `${slugify(id)}-${Date.now()}.${ext}`, {type:f.type||'image/jpeg'});
+        const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files=dt.files;
+      }
+
+      const fd=new FormData(form);
+      fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,''));  // pour vos visuels
+      fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,''));  // pour vos visuels
+      fd.append('saisie_type', etatEnCours.checked ? 'en_cours' : 'termine');
+      if(etatEnCours.checked) fd.append('minute_label', statutHidden.value);
+
+      try{
+        btn.disabled=true; btn.textContent='Envoi…'; complain('Transmission en cours…','muted');
+        const res=await fetch(CONFIG.webhookUrl,{method:'POST', body:fd});
+        if(!res.ok) throw new Error(`Webhook non joignable (HTTP ${res.status})`);
+        form.reset(); document.getElementById('preview').style.display='none';
+        selectedBox.hidden=true; idLine.style.display='';
+        complain('Merci, c’est envoyé !','ok');
+      }catch(err){
+        console.error(err); complain('Erreur d’envoi. Vérifiez votre webhook et la connexion, puis réessayez.');
+      }finally{
+        btn.disabled=false; btn.textContent='Envoyer';
+      }
+    });
+  </script>
+</body>
+</html>
