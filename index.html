@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sporting Villette — Saisie score & photo</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{
+      --brand:#b9314f; --brand-2:#d9a05b; --bg:#f7f5f5; --text:#2c2c2c;
+      --muted:#64748b; --ok:#2da160; --err:#b00020; --card:#ffffff;
+      --border:#e5e7eb; --input-bg:#ffffff;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#2c2c2c; --text:#f7f5f5; --card:#232323; --border:#3a3a3a; --input-bg:#171717; --ok:#74d59f; }
+    }
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:480px;margin:16px auto;padding:0 12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    header img{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    header .club{font-weight:700}
+    header .hint{font-size:12px;color:var(--muted)}
+    h3{margin:8px 0 10px}
+    .muted{color:var(--muted);font-size:12px}
+    .matches .list{display:grid;gap:10px;margin-bottom:10px}
+    .match-card{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
+    .match-card:active{transform:scale(.99)}
+    .mc-left{display:grid;gap:4px;text-align:left}
+    .mc-title{font-weight:700}
+    .mc-sub{font-size:12px;color:var(--muted)}
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:rgba(185,49,79,.06)}
+    .sel-teams{font-weight:700}
+    .mini{padding:8px 10px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none}
+    form{display:grid;gap:10px}
+    label{display:grid;gap:6px;font-size:15px}
+    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text)}
+    input::placeholder{color:var(--muted)}
+    input[type="file"]{padding:10px}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:grid;gap:8px}
+    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:700;border-radius:12px}
+    button[disabled]{opacity:.6;cursor:progress}
+    .switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;gap:8px;border:1px solid var(--border);border-radius:999px;padding:6px 10px;align-items:center}
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:rgba(185,49,79,.06)}
+    .dropzone.drag{border-color:var(--brand);background:rgba(185,49,79,.12)}
+    #preview{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
+    .msg{min-height:20px}
+    .ok{color:var(--ok)}
+    .err{color:var(--err)}
+    footer{margin-top:12px;text-align:center}
+    @media (min-width:520px){ .row{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <img id="clubLogo" alt="Logo du club" src="logo.png" onerror="this.style.display='none'" />
+        <div>
+          <div class="club" id="clubName">Sporting Villette</div>
+          <div class="hint">Saisie du score & photo — mobile</div>
+        </div>
+      </header>
+
+      <!-- Sélecteur de rencontre -->
+      <section id="picker" class="matches">
+        <h3>Choisir une rencontre</h3>
+        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+        <div id="matchesList" class="list" aria-live="polite"></div>
+      </section>
+
+      <!-- Détail de la rencontre sélectionnée -->
+      <div id="selected" class="selected" hidden>
+        <div class="sel-top">
+          <div class="sel-teams" id="selTeams"></div>
+          <div class="muted" id="selMeta"></div>
+        </div>
+        <button type="button" id="changeBtn" class="mini">Changer</button>
+      </div>
+
+      <form id="f" novalidate>
+        <label id="idLine">ID match
+          <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
+        </label>
+
+        <div class="row">
+          <label><span id="label_dom">Score domicile</span>
+            <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+          </label>
+          <label><span id="label_ext">Score extérieur</span>
+            <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+          </label>
