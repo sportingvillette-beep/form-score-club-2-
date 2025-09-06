@@ -456,7 +456,7 @@
       document.getElementById('match_id').value=m.match_id||'';
       setTeamLabels(m.equipe1,m.equipe2);
 
-      // Pré-sélection état/résultat : si WinLose "20e" -> En cours ; si statut final -> l'afficher
+      // Pré-sélection état/résultat : si WinLose "20e" -> En cours ; sinon "Terminé"
       const minute = (m.winlose && String(m.winlose).match(/^(\d{1,2})\s*e$/i)) ? true : false;
       if (minute){ etatEl.value='en_cours'; statutEl.value='En cours'; }
       else { etatEl.value='termine'; computeResult(); }
@@ -525,7 +525,6 @@
       const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
 
-      // Le statut est déjà géré par computeResult/toggleTempsByEtat
       const etat=document.getElementById('etat_match').value;
       const tmin=document.getElementById('temps_jeu').value.trim();
 
@@ -535,18 +534,20 @@
       if (f && CONFIG.renameUploads){ const ext=extFrom(f.type, f.name.split('.').pop()); const renamed=new File([f], `${slugify(id)}-${Date.now()}.${ext}`, {type:f.type||'image/jpeg'}); const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files=dt.files; }
 
       const fd=new FormData(form);
+      // Étiquettes utiles côté Make (pas obligatoire si votre mapping les ignore)
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
 
       if (etat==='en_cours'){
         if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
-        fd.append('WinLose', `${parseInt(tmin,10)}e`);
-        fd.append('statut_calcul','En cours');
-        fd.append('en_cours','true');
+        // >>> IMPORTANT : WinLose = temps de jeu (20e) et on supprime le champ "statut"
+        fd.set('WinLose', `${parseInt(tmin,10)}e`);
+        fd.delete('statut');            // <-- empêche "En cours" d'écraser WinLose côté Make
+        fd.append('en_cours','true');   // indicateur optionnel
       } else {
-        // seulement à la fin du match on calcule Victoire/Défaite/Nul
+        // Statut final calculé (Victoire/Défaite/Nul) uniquement quand terminé
         computeResult();
-        fd.append('WinLose', document.getElementById('statut').value||'');
+        fd.set('WinLose', document.getElementById('statut').value||'');
       }
 
       try{
