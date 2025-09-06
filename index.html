@@ -147,6 +147,7 @@
         <label>Résultat (auto)
           <select name="statut" id="statut" required style="pointer-events:none;opacity:.95">
             <option value="" disabled selected>— Calculé automatiquement —</option>
+            <option>En cours</option>
             <option>Victoire</option>
             <option>Défaite</option>
             <option>Match Nul</option>
@@ -241,7 +242,6 @@
     const lightbox=document.getElementById('lightbox');
     const lightboxImg=document.getElementById('lightboxImg');
 
-    // --- load & render
     async function loadMatches(){
       try{
         matchesMsg.textContent='Chargement…';
@@ -305,14 +305,13 @@
       const minute = parseMinute(m.winlose);
       const finished = isFinished(m.winlose);
 
-      // Règles d'affichage
       if (!hasScore){
         if (start && sameDay(start, now) && minsSinceStart!==null && !finished){
           if (minsSinceStart <= 90) chips.push(`<span class="chip chip-live"><span class="dot"></span> LIVE</span>`);
           else chips.push(`<span class="chip chip-wait">Attente score final</span>`);
         }
       } else {
-        if (minute!=null){ // en cours
+        if (minute!=null){
           if (start && minsSinceStart!==null && minsSinceStart > 120){
             chips.push(`<span class="chip chip-wait">Attente score final</span>`);
           }else{
@@ -415,7 +414,14 @@
     function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
 
     const CLUBS=(CONFIG.clubAliases||[]).map(norm);
+
+    // Calcule le résultat UNIQUEMENT si l'état est "Terminé".
     function computeResult(){
+      const etat = etatEl.value;
+      if (etat === 'en_cours'){
+        statutEl.value = 'En cours';
+        return;
+      }
       const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
       if(Number.isNaN(s1)||Number.isNaN(s2)){ statutEl.value=''; return; }
       if(s1===s2){ statutEl.value='Match Nul'; return; }
@@ -427,14 +433,15 @@
       else { if(isClub2) statutEl.value='Victoire'; else if(isClub1) statutEl.value='Défaite'; else statutEl.value='Terminé'; }
     }
 
-    // --- "matchs en cours" : état forcé à En cours quand on met un temps de jeu
+    // Affichage/force "En cours" selon l'état et le temps de jeu
     function toggleTempsByEtat(){
       const enCours = etatEl.value==='en_cours';
       tempsWrap.hidden = !enCours;
       if (!enCours) tempsEl.value='';
+      computeResult(); // met "En cours" ou recalcule
     }
     etatEl.addEventListener('change', toggleTempsByEtat);
-    // si l'utilisateur saisit un temps, on passe automatiquement l'état à "En cours"
+    // si on tape un temps, force En cours + statut "En cours"
     tempsEl.addEventListener('input', ()=>{
       if (String(tempsEl.value).trim()!==''){
         etatEl.value='en_cours';
@@ -448,13 +455,11 @@
       selectedBox.hidden=false; idLine.style.display='none';
       document.getElementById('match_id').value=m.match_id||'';
       setTeamLabels(m.equipe1,m.equipe2);
-      computeResult();
 
-      // Pré-sélection "En cours" si WinLose est un temps ("20e") ou si le match du jour est démarré < 1h30
-      const minute = parseMinute(m.winlose);
-      const now=new Date(); const started = m._date && sameDay(m._date,now) && now>m._date;
-      const minsSinceStart = started? Math.floor((now-m._date)/60000) : null;
-      if (minute!=null || (started && minsSinceStart<=90)){ etatEl.value='en_cours'; } else { etatEl.value='termine'; }
+      // Pré-sélection état/résultat : si WinLose "20e" -> En cours ; si statut final -> l'afficher
+      const minute = (m.winlose && String(m.winlose).match(/^(\d{1,2})\s*e$/i)) ? true : false;
+      if (minute){ etatEl.value='en_cours'; statutEl.value='En cours'; }
+      else { etatEl.value='termine'; computeResult(); }
       toggleTempsByEtat();
       document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
     }
@@ -519,10 +524,12 @@
       const sd=document.getElementById('score_dom').value;
       const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
-      computeResult();
+
+      // Le statut est déjà géré par computeResult/toggleTempsByEtat
       const etat=document.getElementById('etat_match').value;
       const tmin=document.getElementById('temps_jeu').value.trim();
 
+      // fichiers
       const inputFile=document.getElementById('photo'); const f=inputFile.files[0];
       if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
       if (f && CONFIG.renameUploads){ const ext=extFrom(f.type, f.name.split('.').pop()); const renamed=new File([f], `${slugify(id)}-${Date.now()}.${ext}`, {type:f.type||'image/jpeg'}); const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files=dt.files; }
@@ -534,8 +541,11 @@
       if (etat==='en_cours'){
         if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
         fd.append('WinLose', `${parseInt(tmin,10)}e`);
+        fd.append('statut_calcul','En cours');
         fd.append('en_cours','true');
       } else {
+        // seulement à la fin du match on calcule Victoire/Défaite/Nul
+        computeResult();
         fd.append('WinLose', document.getElementById('statut').value||'');
       }
 
@@ -571,6 +581,7 @@
       finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
     });
 
+    // Lightbox helpers
     function openLightbox(src){ lightboxImg.src=src; lightbox.classList.add('open'); }
     function closeLightbox(){ lightbox.classList.remove('open'); lightboxImg.src=''; }
     lightbox.addEventListener('click', closeLightbox);
