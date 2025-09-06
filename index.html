@@ -4,36 +4,41 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sporting Villette — Scores & Photos</title>
-  <!-- Mode clair par défaut ; dark seulement si l'utilisateur l'active -->
+  <!-- Clair par défaut ; dark uniquement si l'utilisateur l'active -->
   <meta name="color-scheme" content="light dark" />
   <style>
-    /* ===== Thème clair (défaut) : contrastes renforcés ===== */
+    /* ===== Thème CLAIR (palette fournie) ===== */
     :root{
-      --brand:#0b6cff;
-      --brand-2:#1bb874;
-      --bg:#ffffff;
-      --text:#0a0f1a;      /* texte très lisible */
-      --muted:#3e4855;     /* gris foncé pour bon contraste */
-      --ok:#176c43;
-      --err:#b00020;
-      --card:#ffffff;
-      --border:#d9dee6;    /* plus marqué qu'avant */
-      --chip:#f2f6ff;
-      --live:#c62828;
+      --brand:#e4362b;      /* rouge accent */
+      --accent:#13b5a6;     /* vert/bleu accent */
+      --deep:#10056b;       /* bleu profond */
+      --bg:#f1f1f1;         /* fond général clair */
+      --card:#ffffff;       /* cartes blanches */
+      --text:#0f1522;       /* texte principal très lisible */
+      --muted:#4b5565;      /* texte secondaire (assez sombre) */
+      --border:#cfd6df;     /* bordures nettes */
+      --chip:#f6f8fb;       /* pastilles */
+      --live:#e4362b;       /* LIVE */
       --wait:#8a6200;
-      --section:#f5f7fb;
-      --shadow:0 6px 22px rgba(9,30,66,.08);
+      --ok:#2e7d32;
+      --err:#b00020;
+      --section:#ffffff;
+      --shadow:0 6px 20px rgba(16,21,34,.08);
     }
     @media (prefers-color-scheme: dark){
       :root{
-        --bg:#0d1117; --text:#f3f5f8; --muted:#b8c0cc; --card:#0f141b; --border:#263547; --chip:#152232; --section:#101722;
+        --bg:#0d1117; --card:#0f141b; --text:#f3f5f8; --muted:#c5ccd6; --border:#2a3748; --chip:#172231; --section:#121926;
         --ok:#63d39a; --err:#ff6b6b;
       }
       input,select,button{background:#0f141b;color:var(--text)}
     }
 
     html,body{height:100%}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    body{
+      margin:0;
+      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+    }
     .wrap{max-width:760px;margin:18px auto;padding:0 14px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 
@@ -57,59 +62,70 @@
 
     .list{display:grid;gap:10px;padding:10px 10px 14px}
 
-    /* Carte match — 2 lignes (équipe 1 puis équipe 2) + heure */
+    /* Carte match — 2 lignes (équipe 1 / équipe 2) + heure */
     .match-card{
+      width:100%;
       display:grid;grid-template-columns:auto 1fr auto;align-items:center;
-      gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer
+      gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer
     }
     .match-card:active{transform:scale(.99)}
     .time-box{
       display:flex;align-items:center;justify-content:center;
-      min-width:64px;padding:10px;border-radius:12px;
-      background:#e9f0ff;border:1px solid #cfe0ff;color:#0b3aa7;
+      width:64px;padding:10px;border-radius:12px;
+      background:#e8ecff;border:1px solid #ced6ff;color:var(--deep);
       font-weight:900;letter-spacing:.2px
     }
-    .teams{display:grid;gap:6px}
-    .team-row{display:flex;justify-content:space-between;gap:10px}
-    .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .team-score{min-width:36px;text-align:right;font-weight:900}
-    .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
-    .right{display:flex;align-items:center;gap:8px;justify-self:end}
+    .teams{display:grid;gap:6px;min-width:0}
+    /* Grille 1fr auto pour éviter que le score "sorte de l'écran" sur mobile */
+    .team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;min-width:0}
+    .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+    .team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
+    .meta{font-size:12px;display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+    .meta .category{color:var(--accent);font-weight:900}  /* catégorie : couleur différente + gras */
+    .meta .other{color:var(--muted)}
+    .right{display:flex;align-items:center;gap:8px;justify-self:end;flex-wrap:wrap}
 
-    .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border)}
-    .chip-id{color:#384355}
-    .chip-score{background:#eef4ff;border-color:#dbe7ff}
-    .chip-live{background:#ffe3e3;border-color:#ffc0c0;color:#8f0000}
-    .chip-wait{background:#fff0c9;border-color:#ffe19b;color:#6d4e00}
+    .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--text)}
+    .chip-id{color:#2b3447;background:#eef1f6}
+    .chip-score{background:#fff3f2;border-color:#ffd9d6;color:#b0221a}
+    .chip-live{background:#ffe4e2;border-color:#ffc6c2;color:#a41911}
+    .chip-wait{background:#fff1cf;border-color:#ffe29b;color:#6d4e00}
     .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.9}
     .dot::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;animation:pulse 1.2s infinite ease-out}
     @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(2.2);opacity:0}}
 
     /* Zone sélection + formulaires */
-    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#f0f7ff}
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
     .sel-teams{font-weight:900}
-    .mini{padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#4dd0e1);color:#fff;border:none;font-weight:800}
+    .mini{padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;border:none;font-weight:800}
 
     form{display:grid;gap:12px;margin-top:8px}
-    label{display:grid;gap:6px;font-size:15px}
+    label{display:grid;gap:6px;font-size:15px;color:var(--text)}
     input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text)}
-    input::placeholder{color:#546174}
+    input::placeholder{color:#5a6577}
     input[type="file"]{padding:10px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .row.one{grid-template-columns:1fr}
     .actions{display:grid;gap:8px}
-    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:800;border-radius:12px}
+    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;border:none;font-weight:800;border-radius:12px}
     button[disabled]{opacity:.6;cursor:progress}
 
-    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fbfdff}
-    .dropzone.drag{border-color:var(--brand);background:#f3f9ff}
-    .dz-title{font-size:14px;font-weight:700}
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fff}
+    .dropzone.drag{border-color:var(--brand);background:#fff5f5}
+    .dz-title{font-size:14px;font-weight:700;color:var(--text)}
     #preview,#preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border);box-shadow:var(--shadow)}
 
     .muted{color:var(--muted);font-size:12px}
     .msg{min-height:20px}
     .ok{color:var(--ok)} .err{color:var(--err)}
     footer{margin-top:12px;text-align:center}
+
+    /* Mobile : s'assurer que tout reste visible et lisible */
+    @media (max-width: 420px){
+      .match-card{grid-template-columns:64px 1fr; }
+      .right{grid-column:1 / -1; justify-content:flex-start}
+      .chip-id{order:3}
+    }
   </style>
 </head>
 <body>
@@ -145,13 +161,13 @@
           <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
         </label>
 
-        <!-- Nouveau sélecteur d'état de match -->
+        <!-- Sélecteur d'état de match -->
         <label>État du match
           <select name="etat_match" id="etat_match" required>
             <option value="termine" selected>Terminé</option>
             <option value="en_cours">En cours</option>
           </select>
-          <span class="muted">Si le match est « En cours », indiquez le temps de jeu.</span>
+          <span class="muted">Si « En cours », indiquez le temps de jeu.</span>
         </label>
 
         <div class="row">
@@ -163,7 +179,7 @@
           </label>
         </div>
 
-        <!-- Temps de jeu : affiché seulement si "En cours" -->
+        <!-- Temps de jeu si "En cours" -->
         <div class="row one" id="temps_wrapper" hidden>
           <label>Temps de jeu (minutes)
             <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
@@ -171,7 +187,7 @@
         </div>
 
         <label>Résultat (auto)
-          <select name="statut" id="statut" required style="pointer-events:none;opacity:.9">
+          <select name="statut" id="statut" required style="pointer-events:none;opacity:.95">
             <option value="" disabled selected>— Calculé automatiquement —</option>
             <option>Victoire</option>
             <option>Défaite</option>
@@ -244,7 +260,6 @@
       dateWindow: { pastDays: 5, futureDays: 2 },
       liveThresholdMin: 90,
     };
-    // ================================
 
     (function initBrand(){
       if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName;
@@ -255,51 +270,24 @@
     function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
     function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
     function extFrom(type,fallback){ if(!type) return fallback||'jpg'; if(type==='image/jpeg')return'jpg'; if(type==='image/png')return'png'; if(type==='image/webp')return'webp'; if(type==='image/heic'||type==='image/heif')return'heic'; return fallback||'jpg'; }
-
-    function parseDateFR(val){
-      if(!val) return null;
-      const fr = String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (fr){ const d=fr[1].padStart(2,'0'), m=fr[2].padStart(2,'0'), y=fr[3]; return new Date(`${y}-${m}-${d}T00:00:00`); }
-      const d=new Date(val); return isNaN(d)?null:d;
-    }
-    function parseDateTimeFR(dateStr, timeStr){
-      const d = parseDateFR(dateStr); if(!d) return null;
-      const [h='00',m='00']=String(timeStr||'00:00').split(':');
-      const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0);
-      return dt;
-    }
+    function parseDateFR(val){ if(!val) return null; const m=String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){ const d=m[1].padStart(2,'0'), mo=m[2].padStart(2,'0'), y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);} const d=new Date(val); return isNaN(d)?null:d;}
+    function parseDateTimeFR(dateStr,timeStr){ const d=parseDateFR(dateStr); if(!d) return null; const [h='00',m='00']=String(timeStr||'00:00').split(':'); const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0); return dt; }
     function fmtDate(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):''; }
     function fmtTime(d){ return d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''; }
     function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-    function inWindow(d){
-      const base=new Date(); base.setHours(0,0,0,0);
-      const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5));
-      const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2));
-      return d>=start && d<=end;
-    }
-    function csvToRows(csv){
-      const rows=[]; let cur=[],i=0,field='',inq=false;
-      while(i<csv.length){
-        const c=csv[i++];
-        if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } }
-        else if(c===',' && !inq){ cur.push(field); field=''; }
-        else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } }
-        else { field+=c; }
-      }
-      if(field!==''||cur.length){ cur.push(field); rows.push(cur); }
-      return rows.filter(r=>r.length && r.join('').trim()!=='');
-    }
+    function inWindow(d){ const base=new Date(); base.setHours(0,0,0,0); const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5)); const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2)); return d>=start && d<=end; }
+    function csvToRows(csv){ const rows=[]; let cur=[],i=0,field='',inq=false; while(i<csv.length){ const c=csv[i++]; if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } } else if(c===',' && !inq){ cur.push(field); field=''; } else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } } else { field+=c; } } if(field!==''||cur.length){ cur.push(field); rows.push(cur); } return rows.filter(r=>r.length && r.join('').trim()!==''); }
 
     // ---- DOM refs ----
-    const matchesMsg = document.getElementById('matchesMsg');
-    const daysContainer = document.getElementById('daysContainer');
-    const idLine = document.getElementById('idLine');
-    const selectedBox = document.getElementById('selected');
-    const selTeams = document.getElementById('selTeams');
-    const selMeta = document.getElementById('selMeta');
-    const changeBtn = document.getElementById('changeBtn');
+    const matchesMsg=document.getElementById('matchesMsg');
+    const daysContainer=document.getElementById('daysContainer');
+    const idLine=document.getElementById('idLine');
+    const selectedBox=document.getElementById('selected');
+    const selTeams=document.getElementById('selTeams');
+    const selMeta=document.getElementById('selMeta');
+    const changeBtn=document.getElementById('changeBtn');
 
-    // ---- Lire & grouper ----
+    // ---- Lecture CSV + groupe/tri ----
     async function loadMatches(){
       const url=CONFIG.gsheetCsvUrl; if(!url){ matchesMsg.textContent="Configurez CONFIG.gsheetCsvUrl (CSV publié)."; return; }
       try{
@@ -329,7 +317,7 @@
 
         const filtered=items.filter(x=>x._date && inWindow(new Date(x._date)));
 
-        // Tri jour : Samedi, Dimanche, puis autres, et à l’intérieur par heure
+        // Tri : samedi, dimanche, puis autres ; à l'intérieur par heure
         filtered.sort((a,b)=>{
           const rank=d=>d.getDay()===6?1:d.getDay()===0?2:3;
           const ra=rank(a._date), rb=rank(b._date);
@@ -340,34 +328,27 @@
 
         window.__csv_cache={rows,idx,fields:L,headers};
         renderDays(filtered);
-      }catch(err){ console.error(err); matchesMsg.textContent = "Impossible de charger la liste des matchs."; }
+      }catch(err){ console.error(err); matchesMsg.textContent="Impossible de charger la liste des matchs."; }
     }
 
     function isFinished(winlose){
       if(!winlose) return false;
-      const n = norm(winlose);
+      const n=norm(winlose);
       if (/(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(winlose)) return true;
       if (/^\d{1,2}e$/.test(n)) return false;
       return true;
     }
-
     function liveBadge(m){
-      const now=new Date();
-      if (!m._date) return null;
-      if (!sameDay(m._date, now)) return null;
-      if (now < m._date) return null;
-      const mins = Math.floor((now - m._date)/60000);
+      const now=new Date(); if(!m._date||!sameDay(m._date,now)||now<m._date) return null;
       if (isFinished(m.winlose)) return null;
-      if (mins <= (CONFIG.liveThresholdMin||90)) return {type:'live', label:'LIVE'};
-      return {type:'wait', label:'Attente score'};
+      const mins=Math.floor((now-m._date)/60000);
+      return mins<=CONFIG.liveThresholdMin?{type:'live',label:'LIVE'}:{type:'wait',label:'Attente score'};
     }
-
-    function scoreText(m){
+    function scorePieces(m){
       const s1 = (m.eq1score!==undefined && m.eq1score!==null && String(m.eq1score).trim()!=='') ? m.eq1score : null;
       const s2 = (m.eq2score!==undefined && m.eq2score!==null && String(m.eq2score).trim()!=='') ? m.eq2score : null;
-      return {s1, s2, text: (s1!==null && s2!==null) ? `${s1}–${s2}` : ''};
+      return {s1,s2,text:(s1!==null && s2!==null)?`${s1}–${s2}`:''};
     }
-
     function groupByDay(list){
       const groups={};
       for(const m of list){
@@ -386,26 +367,24 @@
     }
 
     function renderDays(list){
-      daysContainer.innerHTML='';
+      const container=daysContainer;
+      container.innerHTML='';
       if(!list.length){ matchesMsg.textContent='Aucun match dans la fenêtre sélectionnée.'; return; }
       matchesMsg.textContent='';
-      const {keys, groups} = groupByDay(list);
-      const frag = document.createDocumentFragment();
+      const {keys,groups}=groupByDay(list);
+      const frag=document.createDocumentFragment();
 
-      for (const k of keys){
-        const d = new Date(k);
-        const sec = document.createElement('div'); sec.className='day-section';
-
-        const head = document.createElement('div'); head.className='day-head';
-        const title = document.createElement('div'); title.className='day-title'; title.textContent = fmtDate(d);
-        const sub = document.createElement('div'); sub.className='day-sub'; sub.textContent = `${groups[k].length} match${groups[k].length>1?'s':''}`;
+      for(const k of keys){
+        const d=new Date(k);
+        const sec=document.createElement('div'); sec.className='day-section';
+        const head=document.createElement('div'); head.className='day-head';
+        const title=document.createElement('div'); title.className='day-title'; title.textContent=fmtDate(d);
+        const sub=document.createElement('div'); sub.className='day-sub'; sub.textContent=`${groups[k].length} match${groups[k].length>1?'s':''}`;
         head.appendChild(title); head.appendChild(sub);
 
-        const listEl = document.createElement('div'); listEl.className='list';
+        const listEl=document.createElement('div'); listEl.className='list';
         groups[k].forEach(m=>{
-          const badge=liveBadge(m);
-          const s=scoreText(m);
-
+          const badge=liveBadge(m), s=scorePieces(m);
           const card=document.createElement('button'); card.type='button'; card.className='match-card';
 
           const rightBits=[];
@@ -426,9 +405,9 @@
                 <div class="team-score">${s.s2!==null ? s.s2 : ''}</div>
               </div>
               <div class="meta">
-                ${m.categorie?`<span>${m.categorie}</span>`:''}
-                ${m.championnat?`<span>${m.championnat}</span>`:''}
-                ${m.ville?`<span>${m.ville}</span>`:''}
+                ${m.categorie?`<span class="category">${m.categorie}</span>`:''}
+                ${m.championnat?`<span class="other">${m.championnat}</span>`:''}
+                ${m.ville?`<span class="other">${m.ville}</span>`:''}
               </div>
             </div>
             <div class="right">${rightBits.join('')}</div>`;
@@ -436,15 +415,13 @@
           listEl.appendChild(card);
         });
 
-        sec.appendChild(head);
-        sec.appendChild(listEl);
+        sec.appendChild(head); sec.appendChild(listEl);
         frag.appendChild(sec);
       }
-
-      daysContainer.appendChild(frag);
+      container.appendChild(frag);
     }
 
-    // ---- Sélection + formulaires ----
+    // ---- Sélection + formulaires (inchangé côté logique) ----
     const labelDom=document.getElementById('label_dom');
     const labelExt=document.getElementById('label_ext');
     const inputId=document.getElementById('match_id');
@@ -457,7 +434,6 @@
 
     function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
 
-    // Détermine le statut (Victoire/Défaite/Nul/Terminé) en fonction des scores et de l'appartenance club
     const CLUBS=(CONFIG.clubAliases||[]).map(norm);
     function computeResult(){
       const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
@@ -471,29 +447,24 @@
       else { if(isClub2) statutEl.value='Victoire'; else if(isClub1) statutEl.value='Défaite'; else statutEl.value='Terminé'; }
     }
 
-    // Toggle du temps de jeu selon l'état
     function toggleTempsByEtat(){
       const enCours = etatEl.value==='en_cours';
       tempsWrap.hidden = !enCours;
-      if (!enCours){ tempsEl.value=''; }
+      if (!enCours) tempsEl.value='';
     }
     etatEl.addEventListener('change', toggleTempsByEtat);
 
     function selectMatch(m, badge){
-      selTeams.textContent = `${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
-      const metaParts=[fmtDate(m._date), fmtTime(m._date), (m.categorie||''), (m.championnat||''), (m.ville||'')].filter(Boolean);
-      selMeta.textContent = metaParts.join(' · ');
-      selectedBox.hidden = false; idLine.style.display = 'none';
-      document.getElementById('match_id').value = m.match_id || '';
+      selTeams.textContent=`${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
+      selMeta.textContent=[fmtDate(m._date), fmtTime(m._date), (m.categorie||''), (m.championnat||''), (m.ville||'')].filter(Boolean).join(' · ');
+      selectedBox.hidden=false; idLine.style.display='none';
+      document.getElementById('match_id').value=m.match_id||'';
       setTeamLabels(m.equipe1,m.equipe2);
       computeResult();
-
-      // Pré-sélection de l'état : si badge LIVE/Attente -> En cours
+      // état par défaut selon badge
       if (badge && (badge.type==='live' || badge.type==='wait')) etatEl.value='en_cours';
       else etatEl.value='termine';
       toggleTempsByEtat();
-
-      // Afficher le formulaire photo supplémentaire si le match est terminé selon la colonne WinLose
       togglePhotoForm(isFinished(m.winlose), m);
       document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
     }
@@ -515,7 +486,6 @@
       document.getElementById('fPhoto').hidden=true;
     });
 
-    // Lookup des équipes depuis l'ID (si saisi à la main)
     async function lookupTeamsById(id){
       try{
         const c=window.__csv_cache; if(!c) return;
@@ -525,14 +495,13 @@
         const e2=c.idx[(F.equipe2||'')], e2x=c.idx[(F.equipe2x||'')];
         const row=c.rows.find(r=>String(r[mi]).trim()===id.trim());
         if(row){
-          const e1label = [row[e1], row[e1x]].filter(Boolean).join(' ').trim();
-          const e2label = [row[e2], row[e2x]].filter(Boolean).join(' ').trim();
-          setTeamLabels(e1label, e2label);
+          const e1label=[row[e1],row[e1x]].filter(Boolean).join(' ').trim();
+          const e2label=[row[e2],row[e2x]].filter(Boolean).join(' ').trim();
+          setTeamLabels(e1label,e2label);
         }
       }catch(e){}
     }
 
-    // Préremplissage via URL
     (function prefill(){
       const p=new URLSearchParams(location.search);
       const id=p.get('match_id'); if(id){ inputId.value=id; }
@@ -545,14 +514,12 @@
     sdEl.addEventListener('input', computeResult);
     seEl.addEventListener('input', computeResult);
 
-    // Charger la liste au démarrage
+    // ---- Chargement ----
     loadMatches();
 
     // ---- Drag & drop & preview (form 1) ----
-    ;(function dropZone(){
-      const dz=document.getElementById('dz');
-      const file=document.getElementById('photo');
-      const prev=document.getElementById('preview');
+    ;(function dz1(){
+      const dz=document.getElementById('dz'), file=document.getElementById('photo'), prev=document.getElementById('preview');
       ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
       ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
       dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
@@ -560,32 +527,27 @@
     })();
 
     // ---- Drag & drop & preview (form 2) ----
-    ;(function dropZone2(){
-      const dz=document.getElementById('dz2');
-      const file=document.getElementById('photo2');
-      const prev=document.getElementById('preview2');
+    ;(function dz2(){
+      const dz=document.getElementById('dz2'), file=document.getElementById('photo2'), prev=document.getElementById('preview2');
       ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
       ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
       dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
       file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
     })();
 
-    // ---- Soumission SCORE ----
-    const form=document.getElementById('f');
-    const msg=document.getElementById('msg');
-    const btn=document.getElementById('btn');
-
+    // ---- Envoi score ----
+    const form=document.getElementById('f'), msg=document.getElementById('msg'), btn=document.getElementById('btn');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg.textContent='';
-      const id=inputId.value.trim(); const sd=sdEl.value; const se=seEl.value;
+      const id=document.getElementById('match_id').value.trim();
+      const sd=document.getElementById('score_dom').value;
+      const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
 
-      computeResult(); // sécurité
+      computeResult();
+      const etat=document.getElementById('etat_match').value;
+      const tmin=document.getElementById('temps_jeu').value.trim();
 
-      const etat = etatEl.value; // 'en_cours' | 'termine'
-      const tmin = tempsEl.value.trim();
-
-      // Gestion fichiers
       const inputFile=document.getElementById('photo'); const f=inputFile.files[0];
       if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
       if (f && CONFIG.renameUploads){
@@ -595,15 +557,14 @@
       }
 
       const fd=new FormData(form);
-      // Ajouter labels Eq1/Eq2 concaténés
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
 
-      if (etat === 'en_cours'){
-        if (!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
+      if (etat==='en_cours'){
+        if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
         fd.append('WinLose', `${parseInt(tmin,10)}e`);
-        fd.append('en_cours', 'true');
-      } else {
+        fd.append('en_cours','true');
+      }else{
         fd.append('WinLose', document.getElementById('statut').value||'');
       }
 
@@ -611,20 +572,16 @@
         btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
         const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd});
         if(!res.ok) throw new Error('Webhook score non joignable');
-        form.reset();
-        document.getElementById('preview').style.display='none';
+        form.reset(); document.getElementById('preview').style.display='none';
         selectedBox.hidden=true; idLine.style.display='';
-        tempsEl.value=''; toggleTempsByEtat();
+        document.getElementById('temps_jeu').value=''; document.getElementById('etat_match').value='termine'; 
         msg.textContent='Merci, score envoyé !'; msg.className='msg ok';
       }catch(err){ console.error(err); msg.textContent='Erreur d\'envoi. Vérifiez la connexion et réessayez.'; msg.className='msg err'; }
       finally{ btn.disabled=false; btn.textContent='Envoyer score'; }
     });
 
-    // ---- Soumission PHOTO SUPPLÉMENTAIRE ----
-    const form2=document.getElementById('fPhoto');
-    const msg2=document.getElementById('msg2');
-    const btn2=document.getElementById('btn2');
-
+    // ---- Envoi photo finale ----
+    const form2=document.getElementById('fPhoto'), msg2=document.getElementById('msg2'), btn2=document.getElementById('btn2');
     form2.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg2.textContent='';
       const file=document.getElementById('photo2').files[0];
@@ -635,7 +592,6 @@
         const renamed=new File([file], `${slugify(form2.dataset.mid||'MATCH')}-FINAL-${Date.now()}.${ext}`, {type:file.type||'image/jpeg'});
         const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo2').files=dt.files;
       }
-
       const fd=new FormData();
       fd.append('match_id', form2.dataset.mid||'');
       fd.append('equipe1_label', form2.dataset.e1||'');
@@ -652,12 +608,6 @@
       }catch(err){ console.error(err); msg2.textContent='Erreur d\'envoi. Réessayez.'; msg2.className='msg err'; }
       finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
     });
-
-    // ---- Accessibilité contraste : forcer texte sombre dans les inputs en mode clair ----
-    (function ensureContrast(){
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return;
-      document.querySelectorAll('input,select,button,.team-name,.team-score,.day-title').forEach(el=>{ el.style.color='var(--text)'; });
-    })();
   </script>
 </body>
 </html>
