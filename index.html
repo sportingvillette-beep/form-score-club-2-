@@ -3,79 +3,95 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sporting Villette — Saisie score & photo</title>
+  <title>Sporting Villette — Scores & Photos</title>
   <meta name="color-scheme" content="light dark" />
   <style>
+    /* ==== Thème clair, lumineux (inspiration apps de scores) ==== */
     :root{
-      /* Palette club (accessible clair/sombre) */
-      --brand:#b9314f;         /* primaire */
-      --brand-2:#d9a05b;       /* accent */
-      --bg:#f7f5f5;            /* fond clair */
-      --text:#1d1d1f;          /* texte clair */
-      --muted:#6b7280;
-      --ok:#2da160;            /* succès clair */
-      --err:#b00020;           /* erreur */
-      --card:#ffffff;          /* carte clair */
-      --border:#e5e7eb;        /* bordure clair */
-      --input-bg:#ffffff;      /* input clair */
-      --live:#d32f2f;
-      --wait:#9a6b00;
+      --brand:#0b6cff;         /* bleu accent propre/clair */
+      --brand-2:#30c48d;       /* vert accent */
+      --bg:#ffffff;            /* fond clair franc */
+      --text:#0b1220;          /* texte principal */
+      --muted:#5b6472;         /* texte secondaire */
+      --ok:#198754;            /* succès */
+      --err:#c62828;           /* erreur */
+      --card:#ffffff;          /* cartes blanches */
+      --border:#e7eaf0;        /* bordure douce */
+      --chip:#f3f6fb;          /* puces */
+      --live:#e53935;          /* pastille live */
+      --wait:#9a6b00;          /* pastille attente */
+      --section:#f7f9fc;       /* bandeau section */
+      --shadow:0 6px 24px rgba(0,16,61,.06);
     }
     @media (prefers-color-scheme: dark){
-      :root{ --bg:#0f0f10; --text:#f7f5f5; --card:#151516; --border:#2a2a2b; --input-bg:#101011; --ok:#74d59f; --muted:#9aa3b2 }
+      :root{
+        --bg:#0d1117; --text:#f0f3f8; --muted:#aab2c0; --card:#0f141b; --border:#1f2630; --chip:#161c25; --section:#101722;
+        --ok:#63d39a; --err:#ff6b6b;
+      }
     }
+
     html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:520px;margin:16px auto;padding:0 12px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px}
-    header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    header img{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
-    header .club{font-weight:800;letter-spacing:.2px}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 4px}
+    header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    header .club{font-weight:800;letter-spacing:.2px;font-size:20px}
     header .hint{font-size:12px;color:var(--muted)}
+    h3{margin:10px 0}
 
-    h3{margin:8px 0 10px}
-    .muted{color:var(--muted);font-size:12px}
+    /* Sections de journée */
+    .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+    .day-head{background:var(--section);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+    .day-title{font-weight:900;text-transform:capitalize}
+    .day-sub{margin-left:auto;color:var(--muted);font-size:12px}
 
-    /* Liste de matchs (mobile-first) */
-    .matches .list{display:grid;gap:10px;margin-bottom:10px}
-    .match-card{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
+    .list{display:grid;gap:10px;padding:10px 10px 14px}
+    .match-card{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
     .match-card:active{transform:scale(.99)}
-    .mc-left{display:grid;gap:4px;text-align:left}
+    .mc-left{display:grid;gap:2px;text-align:left}
     .mc-title{font-weight:800}
-    .mc-sub{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
-    .mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-    .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;padding:4px 8px;border-radius:999px;border:1px solid transparent}
-    .b-live{color:#fff;background:var(--live)}
-    .b-wait{color:#fff;background:var(--wait)}
-    .b-id{font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted)}
-    .dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
-    .dot::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#fff;opacity:.35;animation:pulse 1.2s infinite ease-out}
+    .mc-sub{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px}
+    .mc-right{display:flex;align-items:center;gap:8px}
+
+    .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border)}
+    .chip-id{color:var(--muted)}
+    .chip-score{background:#eef4ff;border-color:#dbe7ff}
+    .chip-live{background:#ffe7e7;border-color:#ffd1d1;color:#b00000}
+    .chip-wait{background:#fff5da;border-color:#ffe9a6;color:#7a5500}
+    .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.9}
+    .dot::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;animation:pulse 1.2s infinite ease-out}
     @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(2.2);opacity:0}}
 
-    .scorechip{font-weight:800}
-    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:rgba(185,49,79,.06)}
-    .sel-teams{font-weight:800}
-    .mini{padding:8px 10px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none}
+    /* Zone sélection + formulaires */
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#f6fbff}
+    .sel-teams{font-weight:900}
+    .mini{padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#4dd0e1);color:#fff;border:none;font-weight:800}
 
-    form{display:grid;gap:10px;margin-top:6px}
+    form{display:grid;gap:12px;margin-top:8px}
     label{display:grid;gap:6px;font-size:15px}
-    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text)}
+    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text)}
     input::placeholder{color:var(--muted)}
     input[type="file"]{padding:10px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .row.one{grid-template-columns:1fr}
     .actions{display:grid;gap:8px}
     button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:800;border-radius:12px}
     button[disabled]{opacity:.6;cursor:progress}
 
-    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:rgba(185,49,79,.06)}
-    .dropzone.drag{border-color:var(--brand);background:rgba(185,49,79,.12)}
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fbfdff}
+    .dropzone.drag{border-color:var(--brand);background:#f3f9ff}
     .dz-title{font-size:14px;font-weight:700}
-    #preview,#preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
+    #preview,#preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border);box-shadow:var(--shadow)}
 
+    .muted{color:var(--muted);font-size:12px}
     .msg{min-height:20px}
-    .ok{color:var(--ok)}
-    .err{color:var(--err)}
+    .ok{color:var(--ok)} .err{color:var(--err)}
     footer{margin-top:12px;text-align:center}
   </style>
 </head>
@@ -94,7 +110,7 @@
       <section id="picker" class="matches">
         <h3>Choisir une rencontre</h3>
         <div id="matchesMsg" class="muted">Chargement des matchs…</div>
-        <div id="matchesList" class="list" aria-live="polite"></div>
+        <div id="daysContainer"></div>
       </section>
 
       <!-- Détail de la rencontre sélectionnée -->
@@ -178,9 +194,7 @@
       webhookPhotoUrl: 'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi',
       maxSizeMB: 10,
       renameUploads: true,
-      // CSV publié de l'onglet "Com matchs réseaux"
       gsheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
-      // Mappage des colonnes
       fields: {
         match_id:'Code Gesthand',
         date:'Date',
@@ -197,44 +211,60 @@
         gymnase:'Gymnase',
         ville:'Ville'
       },
-      // Aliases qui identifient "le club" pour calculer Victoire/Défaite automatiquement
       clubAliases: ['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
-      // Fenêtre de dates : J-5 à J+2 (week-end typique)
       dateWindow: { pastDays: 5, futureDays: 2 },
-      // Seuils pastilles LIVE / Attente
-      liveThresholdMin: 90, // 1h30
+      liveThresholdMin: 90,
     };
     // ================================
 
-    // Identité visuelle
-    (function initBrand(){ if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName; if (CONFIG.logoUrl){ const img=document.getElementById('clubLogo'); img.src=CONFIG.logoUrl; } })();
+    (function initBrand(){
+      if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName;
+      if (CONFIG.logoUrl){ const img=document.getElementById('clubLogo'); img.src=CONFIG.logoUrl; }
+    })();
 
     // ---- Utils ----
     function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
     function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
     function extFrom(type,fallback){ if(!type) return fallback||'jpg'; if(type==='image/jpeg')return'jpg'; if(type==='image/png')return'png'; if(type==='image/webp')return'webp'; if(type==='image/heic'||type==='image/heif')return'heic'; return fallback||'jpg'; }
 
-    function parseDateFR(val){ // "DD/MM/YYYY"
+    function parseDateFR(val){
       if(!val) return null;
       const fr = String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if (fr){ const d=fr[1].padStart(2,'0'), m=fr[2].padStart(2,'0'), y=fr[3]; return new Date(`${y}-${m}-${d}T00:00:00`); }
       const d=new Date(val); return isNaN(d)?null:d;
     }
-    function parseDateTimeFR(dateStr, timeStr){ // "DD/MM/YYYY", "HH:MM"
+    function parseDateTimeFR(dateStr, timeStr){
       const d = parseDateFR(dateStr); if(!d) return null;
       const [h='00',m='00']=String(timeStr||'00:00').split(':');
       const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0);
       return dt;
     }
-    function fmtDate(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'}) : ''; }
-    function fmtTime(d){ return d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : ''; }
+    function fmtDate(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):''; }
+    function fmtTime(d){ return d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''; }
+    function shortWeekday(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'short'}):''; }
     function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-    function inWindow(d){ const base=new Date(); base.setHours(0,0,0,0); const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5)); const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2)); return d>=start && d<=end; }
-    function csvToRows(csv){ const rows=[]; let cur=[],i=0,field='',inq=false; while(i<csv.length){ const c=csv[i++]; if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } } else if(c===',' && !inq){ cur.push(field); field=''; } else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } } else { field+=c; } } if(field!==''||cur.length){ cur.push(field); rows.push(cur); } return rows.filter(r=>r.length && r.join('').trim()!==''); }
+    function inWindow(d){
+      const base=new Date(); base.setHours(0,0,0,0);
+      const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5));
+      const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2));
+      return d>=start && d<=end;
+    }
+    function csvToRows(csv){
+      const rows=[]; let cur=[],i=0,field='',inq=false;
+      while(i<csv.length){
+        const c=csv[i++];
+        if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } }
+        else if(c===',' && !inq){ cur.push(field); field=''; }
+        else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } }
+        else { field+=c; }
+      }
+      if(field!==''||cur.length){ cur.push(field); rows.push(cur); }
+      return rows.filter(r=>r.length && r.join('').trim()!=='');
+    }
 
     // ---- Sélecteur de matchs (lecture CSV) ----
     const matchesMsg = document.getElementById('matchesMsg');
-    const matchesList = document.getElementById('matchesList');
+    const daysContainer = document.getElementById('daysContainer');
     const idLine = document.getElementById('idLine');
     const selectedBox = document.getElementById('selected');
     const selTeams = document.getElementById('selTeams');
@@ -276,23 +306,33 @@
         }).filter(x=>x&&x.match_id);
 
         const filtered = items.filter(x=>x._date && inWindow(new Date(x._date)));
-        filtered.sort((a,b)=>a._date-b._date);
 
-        // cache pour recherche par ID
+        // Tri principal : Samedi, puis Dimanche, puis autres jours par date
+        filtered.sort((a,b)=>{
+          const rankDay = d=>{
+            const w=d.getDay(); // 0 dim, 6 sam
+            if (w===6) return 1; // Samedi
+            if (w===0) return 2; // Dimanche
+            return 3;            // autres
+          };
+          const ra=rankDay(a._date), rb=rankDay(b._date);
+          if (ra!==rb) return ra-rb;
+          if (a._date.toDateString()!==b._date.toDateString()) return a._date-b._date; // date
+          return a._date - b._date; // heure
+        });
+
+        // cache
         window.__csv_cache = { rows, idx, fields:L, headers };
 
-        renderMatches(filtered);
+        renderDays(filtered);
       }catch(err){ console.error(err); matchesMsg.textContent = "Impossible de charger la liste des matchs."; }
     }
 
     function isFinished(winlose){
       if(!winlose) return false;
       const n = norm(winlose);
-      // Si winlose contient "victoire", "defaite", "match nul", "termine" => terminé
       if (/(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(winlose)) return true;
-      // Si c'est du type "20e" => en cours
       if (/^\d{1,2}e$/.test(n)) return false;
-      // Sinon, toute valeur non vide est considérée "terminé"
       return true;
     }
 
@@ -300,7 +340,7 @@
       const now=new Date();
       if (!m._date) return null;
       if (!sameDay(m._date, now)) return null;
-      if (now < m._date) return null; // pas commencé
+      if (now < m._date) return null;
       const mins = Math.floor((now - m._date)/60000);
       if (isFinished(m.winlose)) return null;
       if (mins <= (CONFIG.liveThresholdMin||90)) return {type:'live', label:'LIVE'};
@@ -311,44 +351,80 @@
       const s1 = (m.eq1score!==undefined && m.eq1score!==null && String(m.eq1score).trim()!=='') ? m.eq1score : null;
       const s2 = (m.eq2score!==undefined && m.eq2score!==null && String(m.eq2score).trim()!=='') ? m.eq2score : null;
       if (s1!==null && s2!==null) return `${s1}–${s2}`;
-      // Si pas de score mais winlose = "20e", l'afficher
       if (m.winlose && /^\s*\d{1,2}e\s*$/i.test(m.winlose)) return `${m.winlose.trim()} · en cours`;
       return '';
     }
 
-    function renderMatches(list){
-      matchesList.innerHTML='';
-      if(!list.length){ matchesMsg.textContent='Aucun match dans la fenêtre sélectionnée.'; return; }
-      matchesMsg.textContent='';
-
-      const frag=document.createDocumentFragment();
-      list.forEach(m=>{
-        const badge=liveBadge(m);
-        const score=scoreText(m);
-        const card=document.createElement('button'); card.type='button'; card.className='match-card';
-
-        const rightBits=[];
-        if (score) rightBits.push(`<div class="scorechip">${score}</div>`);
-        if (badge && badge.type==='live') rightBits.push(`<div class="badge b-live"><span class="dot"></span>${badge.label}</div>`);
-        if (badge && badge.type==='wait') rightBits.push(`<div class="badge b-wait">${badge.label}</div>`);
-        rightBits.push(`<div class="badge b-id">${m.match_id}</div>`);
-
-        card.innerHTML=`<div class="mc-left">
-            <div class="mc-title">${(m.equipe1||'').trim()} <span class="muted">vs</span> ${(m.equipe2||'').trim()}</div>
-            <div class="mc-sub">
-              <span>${fmtDate(m._date)} ${fmtTime(m._date)}</span>
-              ${m.categorie?`<span>${m.categorie}</span>`:''}
-              ${m.championnat?`<span>${m.championnat}</span>`:''}
-              ${m.ville?`<span>${m.ville}</span>`:''}
-            </div>
-          </div>
-          <div class="mc-right">${rightBits.join('')}</div>`;
-        card.addEventListener('click',()=>selectMatch(m));
-        frag.appendChild(card);
+    function groupByDay(list){
+      const groups = {};
+      for (const m of list){
+        const key = new Date(m._date.getFullYear(), m._date.getMonth(), m._date.getDate()).toISOString();
+        (groups[key] ||= []).push(m);
+      }
+      // Tri interne par heure
+      Object.values(groups).forEach(arr=>arr.sort((a,b)=>a._date-b._date));
+      // clé triée : Samedi -> Dimanche -> autres dates croissantes
+      const keys = Object.keys(groups).sort((ka,kb)=>{
+        const a=new Date(ka), b=new Date(kb);
+        const rank = d => d.getDay()===6?1 : d.getDay()===0?2 : 3;
+        const ra=rank(a), rb=rank(b);
+        if (ra!==rb) return ra-rb;
+        return a-b;
       });
-      matchesList.appendChild(frag);
+      return {keys, groups};
     }
 
+    function renderDays(list){
+      daysContainer.innerHTML='';
+      if(!list.length){ matchesMsg.textContent='Aucun match dans la fenêtre sélectionnée.'; return; }
+      matchesMsg.textContent='';
+      const {keys, groups} = groupByDay(list);
+      const frag = document.createDocumentFragment();
+
+      for (const k of keys){
+        const d = new Date(k);
+        const sec = document.createElement('div'); sec.className='day-section';
+
+        const head = document.createElement('div'); head.className='day-head';
+        const title = document.createElement('div'); title.className='day-title'; title.textContent = fmtDate(d);
+        const sub = document.createElement('div'); sub.className='day-sub'; sub.textContent = `${groups[k].length} match${groups[k].length>1?'s':''}`;
+        head.appendChild(title); head.appendChild(sub);
+
+        const listEl = document.createElement('div'); listEl.className='list';
+        groups[k].forEach(m=>{
+          const badge=liveBadge(m);
+          const score=scoreText(m);
+          const card=document.createElement('button'); card.type='button'; card.className='match-card';
+
+          const rightBits=[];
+          if (badge && badge.type==='live') rightBits.push(`<span class="chip chip-live"><span class="dot"></span> ${badge.label}</span>`);
+          if (badge && badge.type==='wait') rightBits.push(`<span class="chip chip-wait">${badge.label}</span>`);
+          if (score) rightBits.push(`<span class="chip chip-score">${score}</span>`);
+          rightBits.push(`<span class="chip chip-id">${m.match_id}</span>`);
+
+          card.innerHTML=`<div class="mc-left">
+              <div class="mc-title">${(m.equipe1||'').trim()} <span class="muted">vs</span> ${(m.equipe2||'').trim()}</div>
+              <div class="mc-sub">
+                <span>${fmtTime(m._date)}</span>
+                ${m.categorie?`<span>${m.categorie}</span>`:''}
+                ${m.championnat?`<span>${m.championnat}</span>`:''}
+                ${m.ville?`<span>${m.ville}</span>`:''}
+              </div>
+            </div>
+            <div class="mc-right">${rightBits.join('')}</div>`;
+          card.addEventListener('click',()=>selectMatch(m));
+          listEl.appendChild(card);
+        });
+
+        sec.appendChild(head);
+        sec.appendChild(listEl);
+        frag.appendChild(sec);
+      }
+
+      daysContainer.appendChild(frag);
+    }
+
+    // ---- Sélection + formulaires (identique aux fonctionnalités précédentes) ----
     function selectMatch(m){
       selTeams.textContent = `${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
       const metaParts=[fmtDate(m._date), fmtTime(m._date), (m.categorie||''), (m.championnat||''), (m.ville||'')].filter(Boolean);
@@ -357,7 +433,6 @@
       document.getElementById('match_id').value = m.match_id || '';
       setTeamLabels(m.equipe1,m.equipe2);
       computeResult();
-      // Si déjà terminé => afficher form photo supplémentaire
       togglePhotoForm(isFinished(m.winlose), m);
       document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
     }
@@ -371,21 +446,12 @@
       box.dataset.meta = `${fmtDate(m?._date)} ${fmtTime(m?._date)} · ${(m?.categorie||'')} · ${(m?.championnat||'')}`;
     }
 
-    changeBtn.addEventListener('click',()=>{
-      selectedBox.hidden=true; idLine.style.display='';
-      document.getElementById('match_id').value='';
-      setTeamLabels('domicile','extérieur'); statutEl.value='';
-      togglePhotoForm(false);
-    });
-
-    // ---- Étiquettes dynamiques + résultat auto ----
     const labelDom=document.getElementById('label_dom');
     const labelExt=document.getElementById('label_ext');
     const inputId=document.getElementById('match_id');
     const sdEl=document.getElementById('score_dom');
     const seEl=document.getElementById('score_ext');
     const statutEl=document.getElementById('statut');
-    const tempsEl=document.getElementById('temps_jeu');
 
     function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
 
@@ -402,7 +468,6 @@
       else { if(isClub2) statutEl.value='Victoire'; else if(isClub1) statutEl.value='Défaite'; else statutEl.value='Terminé'; }
     }
 
-    // Recherche d'équipes par ID si saisi à la main
     async function lookupTeamsById(id){
       try{
         const c=window.__csv_cache; if(!c) return;
@@ -419,7 +484,7 @@
       }catch(e){}
     }
 
-    // Préremplissage optionnel via URL (?match_id=...&eq1=...&eq2=...)
+    // Préremplissage
     (function prefill(){
       const p=new URLSearchParams(location.search);
       const id=p.get('match_id'); if(id){ inputId.value=id; }
@@ -428,8 +493,8 @@
 
     let t=null; inputId.addEventListener('input',()=>{ clearTimeout(t); const id=inputId.value.trim(); if(!id) return; t=setTimeout(()=>lookupTeamsById(id),400); });
     inputId.addEventListener('blur',()=>{ const id=inputId.value.trim(); if(id) lookupTeamsById(id); });
-    sdEl.addEventListener('input', computeResult);
-    seEl.addEventListener('input', computeResult);
+    document.getElementById('score_dom').addEventListener('input', computeResult);
+    document.getElementById('score_ext').addEventListener('input', computeResult);
 
     // Charger la liste au démarrage
     loadMatches();
@@ -463,16 +528,15 @@
 
     form.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg.textContent='';
-      const id=inputId.value.trim(); const sd=sdEl.value; const se=seEl.value;
+      const id=inputId.value.trim(); const sd=document.getElementById('score_dom').value; const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
 
-      computeResult(); // sécurité
+      computeResult();
       const tmin = document.getElementById('temps_jeu').value.trim();
 
-      // Taille fichier
+      // Fichier
       const inputFile=document.getElementById('photo'); const f=inputFile.files[0];
       if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
-      // Renommage optionnel
       if (f && CONFIG.renameUploads){
         const ext=extFrom(f.type, f.name.split('.').pop());
         const renamed=new File([f], `${slugify(id)}-${Date.now()}.${ext}`, {type:f.type||'image/jpeg'});
@@ -480,17 +544,14 @@
       }
 
       const fd=new FormData(form);
-      // Joindre aussi les labels utiles côté Make/Sheets
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); // Eq1 + Eq1X
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); // Eq2 + Eq2X
 
-      // Si l'utilisateur renseigne un temps de jeu => alimenter WinLose avec "20e"
       if (tmin){
         const val = `${parseInt(tmin,10)}e`;
         fd.append('WinLose', val);
         fd.append('en_cours', 'true');
       }else{
-        // Sinon, envoyer le statut calculé
         fd.append('WinLose', document.getElementById('statut').value||'');
       }
 
@@ -517,7 +578,6 @@
       const file=document.getElementById('photo2').files[0];
       if(!file){ msg2.textContent='Choisissez une photo.'; msg2.className='msg err'; return; }
       if (file && file.size > CONFIG.maxSizeMB*1024*1024){ msg2.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg2.className='msg err'; return; }
-      // Renommage optionnel
       if (file && CONFIG.renameUploads){
         const ext=extFrom(file.type, file.name.split('.').pop());
         const renamed=new File([file], `${slugify(form2.dataset.mid||'MATCH')}-FINAL-${Date.now()}.${ext}`, {type:file.type||'image/jpeg'});
@@ -539,6 +599,14 @@
         msg2.textContent='Photo envoyée pour archivage !'; msg2.className='msg ok';
       }catch(err){ console.error(err); msg2.textContent='Erreur d\'envoi. Réessayez.'; msg2.className='msg err'; }
       finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
+    });
+
+    // Bouton « Changer »
+    changeBtn.addEventListener('click',()=>{
+      selectedBox.hidden=true; idLine.style.display='';
+      document.getElementById('match_id').value='';
+      setTeamLabels('domicile','extérieur'); statutEl.value='';
+      const box=document.getElementById('fPhoto'); box.hidden=true;
     });
   </script>
 </body>
