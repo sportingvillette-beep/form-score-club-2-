@@ -27,7 +27,7 @@
     .hint{font-size:12px;color:var(--muted)}
     h3{margin:10px 0}
 
-    .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+    .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card')}
     .day-head{position:sticky;top:0;z-index:5;background:var(--section);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px}
     .day-title{font-weight:900;text-transform:capitalize}
     .day-sub{margin-left:auto;color:var(--muted);font-size:12px}
@@ -357,7 +357,7 @@
         const sec=document.createElement('div'); sec.className='day-section';
         const head=document.createElement('div'); head.className='day-head';
         const title=document.createElement('div'); title.className='day-title'; title.textContent=fmtDate(d);
-        const sub=document.createElement('div'); sub.className='day-sub'; sub.textContent=`${groups[k].length} match${groups[k].length>1?'s':''}`;
+        const sub=document.createElement('div'); sub.textContent=`${groups[k].length} match${groups[k].length>1?'s':''}`; sub.className='day-sub';
         head.appendChild(title); head.appendChild(sub);
 
         const listEl=document.createElement('div'); listEl.className='list';
@@ -505,18 +505,18 @@
     // Drag & drop + preview
     ;(function dz1(){const dz=document.getElementById('dz'), file=document.getElementById('photo'), prev=document.getElementById('preview');
       ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag') }));
       dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
       file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
     })();
     ;(function dz2(){const dz=document.getElementById('dz2'), file=document.getElementById('photo2'), prev=document.getElementById('preview2');
       ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag') }));
       dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
       file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
     })();
 
-    // submit score
+    // ---- submit score (STATUT UNIFIÉ DANS WinLose + GARDE-FOU) ----
     const form=document.getElementById('f'), msg=document.getElementById('msg'), btn=document.getElementById('btn');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg.textContent='';
@@ -525,7 +525,7 @@
       const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
 
-      const etat=document.getElementById('etat_match').value;
+      const etat=document.getElementById('etat_match').value; // 'en_cours' | 'termine'
       const tmin=document.getElementById('temps_jeu').value.trim();
 
       // fichiers
@@ -538,17 +538,29 @@
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
 
+      // ----- STATUT UNIFIÉ -----
+      // On N'ENVOIE JAMAIS "statut" → toujours WinLose
+      fd.delete('statut');
+
+      let unified = '';
+
       if (etat==='en_cours'){
+        // GARDE-FOU : minute obligatoire en "En cours"
         if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
-        // >>> IMPORTANT : WinLose = temps de jeu (20e) et on supprime le champ "statut"
-        fd.set('WinLose', `${parseInt(tmin,10)}e`);
-        fd.delete('statut');            // <-- empêche "En cours" d'écraser WinLose côté Make
-        fd.append('en_cours','true');   // indicateur optionnel
+        unified = `${parseInt(tmin,10)}e`;
+        fd.append('en_cours','true'); // indicateur optionnel
       } else {
-        // Statut final calculé (Victoire/Défaite/Nul) uniquement quand terminé
-        computeResult();
-        fd.set('WinLose', document.getElementById('statut').value||'');
+        // Match terminé : si score final présent → Victoire/Défaite/Match Nul ; sinon "Terminé"
+        const s1=parseInt(sd,10), s2=parseInt(se,10);
+        if(!Number.isNaN(s1) && !Number.isNaN(s2)){
+          computeResult();
+          unified = document.getElementById('statut').value || 'Terminé';
+        } else {
+          unified = 'Terminé';
+        }
       }
+
+      fd.set('WinLose', unified);
 
       try{
         btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
