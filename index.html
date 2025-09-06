@@ -538,17 +538,31 @@
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
 
-      if (etat==='en_cours'){
-        if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
-        // >>> IMPORTANT : WinLose = temps de jeu (20e) et on supprime le champ "statut"
-        fd.set('WinLose', `${parseInt(tmin,10)}e`);
-        fd.delete('statut');            // <-- empêche "En cours" d'écraser WinLose côté Make
-        fd.append('en_cours','true');   // indicateur optionnel
-      } else {
-        // Statut final calculé (Victoire/Défaite/Nul) uniquement quand terminé
-        computeResult();
-        fd.set('WinLose', document.getElementById('statut').value||'');
-      }
+// ----- STATUT UNIFIÉ -----
+
+// On N'ENVOIE JAMAIS "statut" → toujours WinLose
+fd.delete('statut');
+
+let unified = '';
+
+if (etat==='en_cours'){
+  // GARDE-FOU : minute obligatoire en "En cours"
+  if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
+  unified = `${parseInt(tmin,10)}e`;  // ex: "35e"
+  fd.append('en_cours','true');       // indicateur optionnel
+} else {
+  // Match terminé : si score final présent → Victoire/Défaite/Match Nul ; sinon "Terminé"
+  const s1=parseInt(sd,10), s2=parseInt(se,10);
+  if(!Number.isNaN(s1) && !Number.isNaN(s2)){
+    computeResult(); // calcule Victoire/Défaite/Nul en tenant compte des alias club
+    unified = document.getElementById('statut').value || 'Terminé';
+  } else {
+    unified = 'Terminé';
+  }
+}
+
+fd.set('WinLose', unified);
+
 
       try{
         btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
