@@ -6,21 +6,21 @@
   <title>Sporting Villette — Scores & Photos</title>
   <meta name="color-scheme" content="light dark" />
   <style>
-    /* ==== Thème clair, lumineux (inspiration apps de scores) ==== */
+    /* ==== Thème très lumineux (sans changer les fonctionnalités) ==== */
     :root{
-      --brand:#0b6cff;         /* bleu accent propre/clair */
-      --brand-2:#30c48d;       /* vert accent */
-      --bg:#ffffff;            /* fond clair franc */
-      --text:#0b1220;          /* texte principal */
-      --muted:#5b6472;         /* texte secondaire */
-      --ok:#198754;            /* succès */
-      --err:#c62828;           /* erreur */
-      --card:#ffffff;          /* cartes blanches */
-      --border:#e7eaf0;        /* bordure douce */
-      --chip:#f3f6fb;          /* puces */
-      --live:#e53935;          /* pastille live */
-      --wait:#9a6b00;          /* pastille attente */
-      --section:#f7f9fc;       /* bandeau section */
+      --brand:#0b6cff;
+      --brand-2:#30c48d;
+      --bg:#ffffff;
+      --text:#0b1220;
+      --muted:#5b6472;
+      --ok:#198754;
+      --err:#c62828;
+      --card:#ffffff;
+      --border:#e7eaf0;
+      --chip:#f3f6fb;
+      --live:#e53935;
+      --wait:#9a6b00;
+      --section:#f7f9fc;
       --shadow:0 6px 24px rgba(0,16,61,.06);
     }
     @media (prefers-color-scheme: dark){
@@ -29,35 +29,47 @@
         --ok:#63d39a; --err:#ff6b6b;
       }
     }
-
     html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-      background:var(--bg); color:var(--text);
-    }
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:760px;margin:18px auto;padding:0 14px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 
     header{display:flex;align-items:center;gap:12px;margin:6px 0 4px}
     header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
-    header .club{font-weight:800;letter-spacing:.2px;font-size:20px}
-    header .hint{font-size:12px;color:var(--muted)}
+    .club{font-weight:800;letter-spacing:.2px;font-size:20px}
+    .hint{font-size:12px;color:var(--muted)}
     h3{margin:10px 0}
 
-    /* Sections de journée */
+    /* Sections de journée (sticky) */
     .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
-    .day-head{background:var(--section);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+    .day-head{
+      position:sticky; top:0; z-index:5;
+      background:var(--section);
+      padding:10px 14px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:8px;
+      backdrop-filter:saturate(120%) blur(6px);
+    }
     .day-title{font-weight:900;text-transform:capitalize}
     .day-sub{margin-left:auto;color:var(--muted);font-size:12px}
 
     .list{display:grid;gap:10px;padding:10px 10px 14px}
-    .match-card{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
+
+    /* Carte match avec heure très visible */
+    .match-card{
+      display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+      gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer
+    }
     .match-card:active{transform:scale(.99)}
+    .time-bubble{
+      display:flex;align-items:center;justify-content:center;
+      min-width:64px;padding:10px 10px;border-radius:12px;
+      background:#eef4ff;border:1px solid #dbe7ff;color:#0b3aa7;
+      font-weight:900;letter-spacing:.2px
+    }
     .mc-left{display:grid;gap:2px;text-align:left}
     .mc-title{font-weight:800}
     .mc-sub{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px}
-    .mc-right{display:flex;align-items:center;gap:8px}
+    .mc-right{display:flex;align-items:center;gap:8px;justify-self:end}
 
     .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border)}
     .chip-id{color:var(--muted)}
@@ -68,7 +80,7 @@
     .dot::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;animation:pulse 1.2s infinite ease-out}
     @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(2.2);opacity:0}}
 
-    /* Zone sélection + formulaires */
+    /* Zone sélection + formulaires — inchangées côté logique */
     .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#f6fbff}
     .sel-teams{font-weight:900}
     .mini{padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#4dd0e1);color:#fff;border:none;font-weight:800}
@@ -186,7 +198,7 @@
   </div>
 
   <script>
-    // ======== CONFIGURATION ========
+    // ======== CONFIGURATION (aucun changement fonctionnel) ========
     const CONFIG = {
       clubName: 'Sporting Villette',
       logoUrl: 'logo.png',
@@ -222,55 +234,28 @@
       if (CONFIG.logoUrl){ const img=document.getElementById('clubLogo'); img.src=CONFIG.logoUrl; }
     })();
 
-    // ---- Utils ----
+    // ---- Utils (inchangés) ----
     function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
     function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
     function extFrom(type,fallback){ if(!type) return fallback||'jpg'; if(type==='image/jpeg')return'jpg'; if(type==='image/png')return'png'; if(type==='image/webp')return'webp'; if(type==='image/heic'||type==='image/heif')return'heic'; return fallback||'jpg'; }
-
-    function parseDateFR(val){
-      if(!val) return null;
-      const fr = String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (fr){ const d=fr[1].padStart(2,'0'), m=fr[2].padStart(2,'0'), y=fr[3]; return new Date(`${y}-${m}-${d}T00:00:00`); }
-      const d=new Date(val); return isNaN(d)?null:d;
-    }
-    function parseDateTimeFR(dateStr, timeStr){
-      const d = parseDateFR(dateStr); if(!d) return null;
-      const [h='00',m='00']=String(timeStr||'00:00').split(':');
-      const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0);
-      return dt;
-    }
+    function parseDateFR(val){ if(!val) return null; const m=String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){ const d=m[1].padStart(2,'0'), mo=m[2].padStart(2,'0'), y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);} const d=new Date(val); return isNaN(d)?null:d;}
+    function parseDateTimeFR(dateStr,timeStr){ const d=parseDateFR(dateStr); if(!d) return null; const [h='00',m='00']=String(timeStr||'00:00').split(':'); const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0); return dt; }
     function fmtDate(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):''; }
     function fmtTime(d){ return d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''; }
-    function shortWeekday(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'short'}):''; }
     function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-    function inWindow(d){
-      const base=new Date(); base.setHours(0,0,0,0);
-      const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5));
-      const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2));
-      return d>=start && d<=end;
-    }
-    function csvToRows(csv){
-      const rows=[]; let cur=[],i=0,field='',inq=false;
-      while(i<csv.length){
-        const c=csv[i++];
-        if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } }
-        else if(c===',' && !inq){ cur.push(field); field=''; }
-        else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } }
-        else { field+=c; }
-      }
-      if(field!==''||cur.length){ cur.push(field); rows.push(cur); }
-      return rows.filter(r=>r.length && r.join('').trim()!=='');
-    }
+    function inWindow(d){ const base=new Date(); base.setHours(0,0,0,0); const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||5)); const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||2)); return d>=start && d<=end; }
+    function csvToRows(csv){ const rows=[]; let cur=[],i=0,field='',inq=false; while(i<csv.length){ const c=csv[i++]; if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } } else if(c===',' && !inq){ cur.push(field); field=''; } else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } } else { field+=c; } } if(field!==''||cur.length){ cur.push(field); rows.push(cur); } return rows.filter(r=>r.length && r.join('').trim()!==''); }
 
-    // ---- Sélecteur de matchs (lecture CSV) ----
-    const matchesMsg = document.getElementById('matchesMsg');
-    const daysContainer = document.getElementById('daysContainer');
-    const idLine = document.getElementById('idLine');
-    const selectedBox = document.getElementById('selected');
-    const selTeams = document.getElementById('selTeams');
-    const selMeta = document.getElementById('selMeta');
-    const changeBtn = document.getElementById('changeBtn');
+    // ---- Elements ----
+    const matchesMsg=document.getElementById('matchesMsg');
+    const daysContainer=document.getElementById('daysContainer');
+    const idLine=document.getElementById('idLine');
+    const selectedBox=document.getElementById('selected');
+    const selTeams=document.getElementById('selTeams');
+    const selMeta=document.getElementById('selMeta');
+    const changeBtn=document.getElementById('changeBtn');
 
+    // ---- Lecture & rendu (tri par jour + heure, sans changer la logique) ----
     async function loadMatches(){
       const url=CONFIG.gsheetCsvUrl; if(!url){ matchesMsg.textContent="Configurez CONFIG.gsheetCsvUrl (CSV publié)."; return; }
       try{
@@ -283,70 +268,51 @@
         const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
 
         const items=rows.map(r=>{
-          const d = r[idx[L.date]];
-          const h = r[idx[L.heure]];
-          const dt = parseDateTimeFR(d,h);
-          const e1 = (r[idx[L.equipe1]]||'').trim();
-          const e1x = (r[idx[L.equipe1x]]||'').trim();
-          const e2 = (r[idx[L.equipe2]]||'').trim();
-          const e2x = (r[idx[L.equipe2x]]||'').trim();
-          const e1label = (e1 + (e1x?` ${e1x}`:'' )).trim();
-          const e2label = (e2 + (e2x?` ${e2x}`:'' )).trim();
-          const eq1score = r[idx[L.eq1score]];
-          const eq2score = r[idx[L.eq2score]];
-          const winlose = r[idx[L.winlose]];
+          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=parseDateTimeFR(d,h);
+          const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
+          const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
+          const e1label=(e1+(e1x?` ${e1x}`:'' )).trim();
+          const e2label=(e2+(e2x?` ${e2x}`:'' )).trim();
           return {
-            match_id: r[idx[L.match_id]],
-            date_str: d, heure_str: h,
-            _date: dt, categorie: r[idx[L.categorie]], championnat: r[idx[L.championnat]],
-            equipe1: e1label, equipe2: e2label,
-            eq1score, eq2score, winlose,
-            gymnase: r[idx[L.gymnase]], ville: r[idx[L.ville]]
+            match_id:r[idx[L.match_id]],
+            date_str:d, heure_str:h, _date:dt,
+            categorie:r[idx[L.categorie]], championnat:r[idx[L.championnat]],
+            equipe1:e1label, equipe2:e2label,
+            eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]],
+            winlose:r[idx[L.winlose]], gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]]
           };
         }).filter(x=>x&&x.match_id);
 
-        const filtered = items.filter(x=>x._date && inWindow(new Date(x._date)));
+        const filtered=items.filter(x=>x._date && inWindow(new Date(x._date)));
 
-        // Tri principal : Samedi, puis Dimanche, puis autres jours par date
+        // Tri jour : Samedi, Dimanche, puis autres, et à l’intérieur par heure
         filtered.sort((a,b)=>{
-          const rankDay = d=>{
-            const w=d.getDay(); // 0 dim, 6 sam
-            if (w===6) return 1; // Samedi
-            if (w===0) return 2; // Dimanche
-            return 3;            // autres
-          };
-          const ra=rankDay(a._date), rb=rankDay(b._date);
-          if (ra!==rb) return ra-rb;
-          if (a._date.toDateString()!==b._date.toDateString()) return a._date-b._date; // date
-          return a._date - b._date; // heure
+          const rank=d=>d.getDay()===6?1:d.getDay()===0?2:3;
+          const ra=rank(a._date), rb=rank(b._date);
+          if(ra!==rb) return ra-rb;
+          if (a._date.toDateString()!==b._date.toDateString()) return a._date-b._date;
+          return a._date-b._date;
         });
 
-        // cache
-        window.__csv_cache = { rows, idx, fields:L, headers };
-
+        // cache pour lookup
+        window.__csv_cache={rows,idx,fields:L,headers};
         renderDays(filtered);
-      }catch(err){ console.error(err); matchesMsg.textContent = "Impossible de charger la liste des matchs."; }
+      }catch(e){ console.error(e); matchesMsg.textContent="Impossible de charger la liste des matchs."; }
     }
 
     function isFinished(winlose){
       if(!winlose) return false;
-      const n = norm(winlose);
+      const n=norm(winlose);
       if (/(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(winlose)) return true;
       if (/^\d{1,2}e$/.test(n)) return false;
       return true;
     }
-
     function liveBadge(m){
-      const now=new Date();
-      if (!m._date) return null;
-      if (!sameDay(m._date, now)) return null;
-      if (now < m._date) return null;
-      const mins = Math.floor((now - m._date)/60000);
+      const now=new Date(); if(!m._date||!sameDay(m._date,now)||now<m._date) return null;
       if (isFinished(m.winlose)) return null;
-      if (mins <= (CONFIG.liveThresholdMin||90)) return {type:'live', label:'LIVE'};
-      return {type:'wait', label:'Attente score'};
+      const mins=Math.floor((now-m._date)/60000);
+      return mins<=CONFIG.liveThresholdMin?{type:'live',label:'LIVE'}:{type:'wait',label:'Attente score'};
     }
-
     function scoreText(m){
       const s1 = (m.eq1score!==undefined && m.eq1score!==null && String(m.eq1score).trim()!=='') ? m.eq1score : null;
       const s2 = (m.eq2score!==undefined && m.eq2score!==null && String(m.eq2score).trim()!=='') ? m.eq2score : null;
@@ -356,56 +322,53 @@
     }
 
     function groupByDay(list){
-      const groups = {};
-      for (const m of list){
-        const key = new Date(m._date.getFullYear(), m._date.getMonth(), m._date.getDate()).toISOString();
+      const groups={};
+      for(const m of list){
+        const key=new Date(m._date.getFullYear(),m._date.getMonth(),m._date.getDate()).toISOString();
         (groups[key] ||= []).push(m);
       }
-      // Tri interne par heure
       Object.values(groups).forEach(arr=>arr.sort((a,b)=>a._date-b._date));
-      // clé triée : Samedi -> Dimanche -> autres dates croissantes
-      const keys = Object.keys(groups).sort((ka,kb)=>{
+      const keys=Object.keys(groups).sort((ka,kb)=>{
         const a=new Date(ka), b=new Date(kb);
-        const rank = d => d.getDay()===6?1 : d.getDay()===0?2 : 3;
+        const rank=d=>d.getDay()===6?1:d.getDay()===0?2:3;
         const ra=rank(a), rb=rank(b);
-        if (ra!==rb) return ra-rb;
+        if(ra!==rb) return ra-rb;
         return a-b;
       });
-      return {keys, groups};
+      return {keys,groups};
     }
 
     function renderDays(list){
-      daysContainer.innerHTML='';
+      const container=daysContainer;
+      container.innerHTML='';
       if(!list.length){ matchesMsg.textContent='Aucun match dans la fenêtre sélectionnée.'; return; }
       matchesMsg.textContent='';
-      const {keys, groups} = groupByDay(list);
-      const frag = document.createDocumentFragment();
+      const {keys,groups}=groupByDay(list);
+      const frag=document.createDocumentFragment();
 
-      for (const k of keys){
-        const d = new Date(k);
-        const sec = document.createElement('div'); sec.className='day-section';
-
-        const head = document.createElement('div'); head.className='day-head';
-        const title = document.createElement('div'); title.className='day-title'; title.textContent = fmtDate(d);
-        const sub = document.createElement('div'); sub.className='day-sub'; sub.textContent = `${groups[k].length} match${groups[k].length>1?'s':''}`;
+      for(const k of keys){
+        const d=new Date(k);
+        const sec=document.createElement('div'); sec.className='day-section';
+        const head=document.createElement('div'); head.className='day-head';
+        const title=document.createElement('div'); title.className='day-title'; title.textContent=fmtDate(d);
+        const sub=document.createElement('div'); sub.className='day-sub'; sub.textContent=`${groups[k].length} match${groups[k].length>1?'s':''}`;
         head.appendChild(title); head.appendChild(sub);
 
-        const listEl = document.createElement('div'); listEl.className='list';
+        const listEl=document.createElement('div'); listEl.className='list';
         groups[k].forEach(m=>{
-          const badge=liveBadge(m);
-          const score=scoreText(m);
+          const badge=liveBadge(m), score=scoreText(m);
           const card=document.createElement('button'); card.type='button'; card.className='match-card';
-
           const rightBits=[];
           if (badge && badge.type==='live') rightBits.push(`<span class="chip chip-live"><span class="dot"></span> ${badge.label}</span>`);
           if (badge && badge.type==='wait') rightBits.push(`<span class="chip chip-wait">${badge.label}</span>`);
           if (score) rightBits.push(`<span class="chip chip-score">${score}</span>`);
           rightBits.push(`<span class="chip chip-id">${m.match_id}</span>`);
 
-          card.innerHTML=`<div class="mc-left">
+          card.innerHTML=`
+            <div class="time-bubble">${fmtTime(m._date)}</div>
+            <div class="mc-left">
               <div class="mc-title">${(m.equipe1||'').trim()} <span class="muted">vs</span> ${(m.equipe2||'').trim()}</div>
               <div class="mc-sub">
-                <span>${fmtTime(m._date)}</span>
                 ${m.categorie?`<span>${m.categorie}</span>`:''}
                 ${m.championnat?`<span>${m.championnat}</span>`:''}
                 ${m.ville?`<span>${m.ville}</span>`:''}
@@ -416,34 +379,30 @@
           listEl.appendChild(card);
         });
 
-        sec.appendChild(head);
-        sec.appendChild(listEl);
+        sec.appendChild(head); sec.appendChild(listEl);
         frag.appendChild(sec);
       }
-
-      daysContainer.appendChild(frag);
+      container.appendChild(frag);
     }
 
-    // ---- Sélection + formulaires (identique aux fonctionnalités précédentes) ----
+    // ---- Sélection + formulaires (identique côté fonctionnalités) ----
     function selectMatch(m){
-      selTeams.textContent = `${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
-      const metaParts=[fmtDate(m._date), fmtTime(m._date), (m.categorie||''), (m.championnat||''), (m.ville||'')].filter(Boolean);
-      selMeta.textContent = metaParts.join(' · ');
-      selectedBox.hidden = false; idLine.style.display = 'none';
-      document.getElementById('match_id').value = m.match_id || '';
+      selTeams.textContent=`${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
+      selMeta.textContent=[fmtDate(m._date), fmtTime(m._date), (m.categorie||''), (m.championnat||''), (m.ville||'')].filter(Boolean).join(' · ');
+      selectedBox.hidden=false; idLine.style.display='none';
+      document.getElementById('match_id').value=m.match_id||'';
       setTeamLabels(m.equipe1,m.equipe2);
       computeResult();
       togglePhotoForm(isFinished(m.winlose), m);
       document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
     }
-
-    function togglePhotoForm(show, m){
+    function togglePhotoForm(show,m){
       const box=document.getElementById('fPhoto');
-      box.hidden = !show;
-      box.dataset.mid = m?.match_id || '';
-      box.dataset.e1 = m?.equipe1 || '';
-      box.dataset.e2 = m?.equipe2 || '';
-      box.dataset.meta = `${fmtDate(m?._date)} ${fmtTime(m?._date)} · ${(m?.categorie||'')} · ${(m?.championnat||'')}`;
+      box.hidden=!show;
+      box.dataset.mid=m?.match_id||'';
+      box.dataset.e1=m?.equipe1||'';
+      box.dataset.e2=m?.equipe2||'';
+      box.dataset.meta=`${fmtDate(m?._date)} ${fmtTime(m?._date)} · ${(m?.categorie||'')} · ${(m?.championnat||'')}`;
     }
 
     const labelDom=document.getElementById('label_dom');
@@ -454,7 +413,6 @@
     const statutEl=document.getElementById('statut');
 
     function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
-
     const CLUBS=(CONFIG.clubAliases||[]).map(norm);
     function computeResult(){
       const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
@@ -477,14 +435,13 @@
         const e2=c.idx[(F.equipe2||'')], e2x=c.idx[(F.equipe2x||'')];
         const row=c.rows.find(r=>String(r[mi]).trim()===id.trim());
         if(row){
-          const e1label = [row[e1], row[e1x]].filter(Boolean).join(' ').trim();
-          const e2label = [row[e2], row[e2x]].filter(Boolean).join(' ').trim();
-          setTeamLabels(e1label, e2label);
+          const e1label=[row[e1],row[e1x]].filter(Boolean).join(' ').trim();
+          const e2label=[row[e2],row[e2x]].filter(Boolean).join(' ').trim();
+          setTeamLabels(e1label,e2label);
         }
       }catch(e){}
     }
 
-    // Préremplissage
     (function prefill(){
       const p=new URLSearchParams(location.search);
       const id=p.get('match_id'); if(id){ inputId.value=id; }
@@ -496,45 +453,37 @@
     document.getElementById('score_dom').addEventListener('input', computeResult);
     document.getElementById('score_ext').addEventListener('input', computeResult);
 
-    // Charger la liste au démarrage
+    // ---- Chargement liste ----
     loadMatches();
 
-    // ---- Drag & drop & preview (form 1) ----
-    ;(function dropZone(){
-      const dz=document.getElementById('dz');
-      const file=document.getElementById('photo');
-      const prev=document.getElementById('preview');
+    // ---- Drag & drop + preview (inchangés) ----
+    ;(function dz1(){
+      const dz=document.getElementById('dz'), file=document.getElementById('photo'), prev=document.getElementById('preview');
+      ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
+      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+      dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
+      file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
+    })();
+    ;(function dz2(){
+      const dz=document.getElementById('dz2'), file=document.getElementById('photo2'), prev=document.getElementById('preview2');
       ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
       ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
       dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
       file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
     })();
 
-    // ---- Drag & drop & preview (form 2) ----
-    ;(function dropZone2(){
-      const dz=document.getElementById('dz2');
-      const file=document.getElementById('photo2');
-      const prev=document.getElementById('preview2');
-      ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
-      dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
-      file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
-    })();
-
-    // ---- Soumission SCORE ----
-    const form=document.getElementById('f');
-    const msg=document.getElementById('msg');
-    const btn=document.getElementById('btn');
-
+    // ---- Envoi score (identique) ----
+    const form=document.getElementById('f'), msg=document.getElementById('msg'), btn=document.getElementById('btn');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg.textContent='';
-      const id=inputId.value.trim(); const sd=document.getElementById('score_dom').value; const se=document.getElementById('score_ext').value;
+      const id=document.getElementById('match_id').value.trim();
+      const sd=document.getElementById('score_dom').value;
+      const se=document.getElementById('score_ext').value;
       if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
 
       computeResult();
-      const tmin = document.getElementById('temps_jeu').value.trim();
+      const tmin=document.getElementById('temps_jeu').value.trim();
 
-      // Fichier
       const inputFile=document.getElementById('photo'); const f=inputFile.files[0];
       if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
       if (f && CONFIG.renameUploads){
@@ -544,23 +493,16 @@
       }
 
       const fd=new FormData(form);
-      fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); // Eq1 + Eq1X
-      fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); // Eq2 + Eq2X
-
-      if (tmin){
-        const val = `${parseInt(tmin,10)}e`;
-        fd.append('WinLose', val);
-        fd.append('en_cours', 'true');
-      }else{
-        fd.append('WinLose', document.getElementById('statut').value||'');
-      }
+      fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
+      fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
+      if (tmin){ fd.append('WinLose', `${parseInt(tmin,10)}e`); fd.append('en_cours','true'); }
+      else { fd.append('WinLose', document.getElementById('statut').value||''); }
 
       try{
         btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
         const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd});
         if(!res.ok) throw new Error('Webhook score non joignable');
-        form.reset();
-        document.getElementById('preview').style.display='none';
+        form.reset(); document.getElementById('preview').style.display='none';
         selectedBox.hidden=true; idLine.style.display='';
         document.getElementById('temps_jeu').value='';
         msg.textContent='Merci, score envoyé !'; msg.className='msg ok';
@@ -568,11 +510,8 @@
       finally{ btn.disabled=false; btn.textContent='Envoyer score'; }
     });
 
-    // ---- Soumission PHOTO SUPPLÉMENTAIRE ----
-    const form2=document.getElementById('fPhoto');
-    const msg2=document.getElementById('msg2');
-    const btn2=document.getElementById('btn2');
-
+    // ---- Envoi photo finale (identique) ----
+    const form2=document.getElementById('fPhoto'), msg2=document.getElementById('msg2'), btn2=document.getElementById('btn2');
     form2.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg2.textContent='';
       const file=document.getElementById('photo2').files[0];
@@ -583,7 +522,6 @@
         const renamed=new File([file], `${slugify(form2.dataset.mid||'MATCH')}-FINAL-${Date.now()}.${ext}`, {type:file.type||'image/jpeg'});
         const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo2').files=dt.files;
       }
-
       const fd=new FormData();
       fd.append('match_id', form2.dataset.mid||'');
       fd.append('equipe1_label', form2.dataset.e1||'');
@@ -601,12 +539,11 @@
       finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
     });
 
-    // Bouton « Changer »
     changeBtn.addEventListener('click',()=>{
       selectedBox.hidden=true; idLine.style.display='';
       document.getElementById('match_id').value='';
       setTeamLabels('domicile','extérieur'); statutEl.value='';
-      const box=document.getElementById('fPhoto'); box.hidden=true;
+      document.getElementById('fPhoto').hidden=true;
     });
   </script>
 </body>
