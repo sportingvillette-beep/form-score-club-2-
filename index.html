@@ -36,6 +36,14 @@
     .match-card{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
     .match-card:active{transform:scale(.99)}
     .time-box{display:flex;align-items:center;justify-content:center;width:64px;padding:10px;border-radius:12px;background:#e8ecff;border:1px solid #ced6ff;color:var(--deep);font-weight:900;letter-spacing:.2px}
+    /* colonne heure + code */
+    .time-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+    /* pastille du code match sous l'heure */
+    .code-chip{
+      font-size:11px;font-weight:800;letter-spacing:.2px;
+      color:#2b3447;background:#eef1f6;border:1px solid var(--border);
+      border-radius:999px;padding:4px 8px;line-height:1
+    }
     .teams{display:grid;gap:6px;min-width:0}
     .team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;min-width:0}
     .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
@@ -45,7 +53,6 @@
     .meta .other{color:var(--muted)}
     .right{display:flex;align-items:center;gap:8px;justify-self:end;flex-wrap:wrap}
     .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--text)}
-    .chip-id{color:#2b3447;background:#eef1f6}
     .chip-live{background:#ffe4e2;border-color:#ffc6c2;color:#a41911}
     .chip-wait{background:#fff1cf;border-color:#ffe29b;color:#6d4e00}
     .chip-time{background:#eef5ff;border-color:#d9e6ff;color:#0b3aa7}
@@ -322,7 +329,7 @@
           chips.push(`<span class="chip">${label}</span>`);
         }
       }
-      chips.push(`<span class="chip chip-id">${m.match_id}</span>`);
+      // on n'affiche plus l'ID ici (déplacé sous l'heure)
       if (m.photo){
         chips.push(`<span class="thumb-wrap"><button class="thumb-btn" data-photo="${m.photo}" aria-label="Agrandir la photo" onclick="event.stopPropagation();openLightbox('${m.photo}')"><img class="thumb" src="${m.photo}" alt="Photo du match"></button></span>`);
       }
@@ -367,7 +374,10 @@
 
           const card=document.createElement('button'); card.type='button'; card.className='match-card';
           card.innerHTML=`
-            <div class="time-box">${fmtTime(m._date)}</div>
+            <div class="time-col">
+              <div class="time-box">${fmtTime(m._date)}</div>
+              <div class="code-chip">${m.match_id}</div>
+            </div>
             <div class="teams">
               <div class="team-row">
                 <div class="team-name">${(m.equipe1||'').trim()}</div>
@@ -381,6 +391,7 @@
                 ${m.categorie?`<span class="category">${m.categorie}</span>`:''}
                 ${m.championnat?`<span class="other">${m.championnat}</span>`:''}
                 ${m.ville?`<span class="other">${m.ville}</span>`:''}
+                ${m.gymnase?`<span class="other">${m.gymnase}</span>`:''}
               </div>
             </div>
             <div class="right">${rightChipsForMatch(m)}</div>`;
@@ -516,7 +527,7 @@
       file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
     })();
 
-    // submit score
+    // submit score (statut unifié + garde-fou minute)
     const form=document.getElementById('f'), msg=document.getElementById('msg'), btn=document.getElementById('btn');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault(); msg.textContent='';
@@ -538,31 +549,24 @@
       fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,'')); 
       fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,'')); 
 
-// ----- STATUT UNIFIÉ -----
+      // ----- STATUT UNIFIÉ -----
+      fd.delete('statut'); // on n'envoie jamais "statut"
+      let unified = '';
 
-// On N'ENVOIE JAMAIS "statut" → toujours WinLose
-fd.delete('statut');
-
-let unified = '';
-
-if (etat==='en_cours'){
-  // GARDE-FOU : minute obligatoire en "En cours"
-  if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
-  unified = `${parseInt(tmin,10)}e`;  // ex: "35e"
-  fd.append('en_cours','true');       // indicateur optionnel
-} else {
-  // Match terminé : si score final présent → Victoire/Défaite/Match Nul ; sinon "Terminé"
-  const s1=parseInt(sd,10), s2=parseInt(se,10);
-  if(!Number.isNaN(s1) && !Number.isNaN(s2)){
-    computeResult(); // calcule Victoire/Défaite/Nul en tenant compte des alias club
-    unified = document.getElementById('statut').value || 'Terminé';
-  } else {
-    unified = 'Terminé';
-  }
-}
-
-fd.set('WinLose', unified);
-
+      if (etat==='en_cours'){
+        if(!tmin){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; } // garde-fou
+        unified = `${parseInt(tmin,10)}e`;
+        fd.append('en_cours','true'); // indicateur optionnel
+      } else {
+        const s1=parseInt(sd,10), s2=parseInt(se,10);
+        if(!Number.isNaN(s1) && !Number.isNaN(s2)){
+          computeResult();
+          unified = document.getElementById('statut').value || 'Terminé';
+        } else {
+          unified = 'Terminé';
+        }
+      }
+      fd.set('WinLose', unified);
 
       try{
         btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
