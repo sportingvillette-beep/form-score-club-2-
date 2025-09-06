@@ -4,18 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sporting Villette — Scores & Photos</title>
-  <!-- Clair par défaut ; dark uniquement si l'utilisateur l'active -->
   <meta name="color-scheme" content="light dark" />
   <style>
-    /* ===== Thème CLAIR (palette fournie) ===== */
+    /* ===== Thème CLAIR (palette) ===== */
     :root{
       --brand:#e4362b;      /* rouge accent */
       --accent:#13b5a6;     /* vert/bleu accent */
       --deep:#10056b;       /* bleu profond */
       --bg:#f1f1f1;         /* fond général clair */
       --card:#ffffff;       /* cartes blanches */
-      --text:#0f1522;       /* texte principal très lisible */
-      --muted:#4b5565;      /* texte secondaire (assez sombre) */
+      --text:#0f1522;       /* texte principal */
+      --muted:#4b5565;      /* texte secondaire */
       --border:#cfd6df;     /* bordures nettes */
       --chip:#f6f8fb;       /* pastilles */
       --live:#e4362b;       /* LIVE */
@@ -34,11 +33,7 @@
     }
 
     html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg); color:var(--text);
-    }
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:760px;margin:18px auto;padding:0 14px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 
@@ -48,21 +43,15 @@
     .hint{font-size:12px;color:var(--muted)}
     h3{margin:10px 0}
 
-    /* Sections de journée (sticky) */
+    /* Sections journée */
     .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
-    .day-head{
-      position:sticky; top:0; z-index:5;
-      background:var(--section);
-      padding:10px 14px;border-bottom:1px solid var(--border);
-      display:flex;align-items:center;gap:8px;
-      backdrop-filter:saturate(120%) blur(6px);
-    }
+    .day-head{position:sticky;top:0;z-index:5;background:var(--section);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px}
     .day-title{font-weight:900;text-transform:capitalize}
     .day-sub{margin-left:auto;color:var(--muted);font-size:12px}
 
     .list{display:grid;gap:10px;padding:10px 10px 14px}
 
-    /* Carte match — 2 lignes (équipe 1 / équipe 2) + heure */
+    /* Carte match — 2 lignes équipe + heure + mini photo */
     .match-card{
       width:100%;
       display:grid;grid-template-columns:auto 1fr auto;align-items:center;
@@ -76,25 +65,33 @@
       font-weight:900;letter-spacing:.2px
     }
     .teams{display:grid;gap:6px;min-width:0}
-    /* Grille 1fr auto pour éviter que le score "sorte de l'écran" sur mobile */
     .team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;min-width:0}
     .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
     .team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
     .meta{font-size:12px;display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
-    .meta .category{color:var(--accent);font-weight:900}  /* catégorie : couleur différente + gras */
+    .meta .category{color:var(--accent);font-weight:900;font-size:14px}  /* ++ plus gros + gras */
     .meta .other{color:var(--muted)}
-    .right{display:flex;align-items:center;gap:8px;justify-self:end;flex-wrap:wrap}
 
+    .right{display:flex;align-items:center;gap:8px;justify-self:end;flex-wrap:wrap}
     .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--text)}
     .chip-id{color:#2b3447;background:#eef1f6}
-    .chip-score{background:#fff3f2;border-color:#ffd9d6;color:#b0221a}
     .chip-live{background:#ffe4e2;border-color:#ffc6c2;color:#a41911}
     .chip-wait{background:#fff1cf;border-color:#ffe29b;color:#6d4e00}
     .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.9}
     .dot::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;animation:pulse 1.2s infinite ease-out}
     @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(2.2);opacity:0}}
 
-    /* Zone sélection + formulaires */
+    /* Miniature photo */
+    .thumb{width:56px;height:42px;object-fit:cover;border-radius:8px;border:1px solid var(--border);box-shadow:var(--shadow)}
+    .thumb-wrap{display:flex;align-items:center;justify-content:center}
+    .thumb-btn{all:unset;cursor:zoom-in}
+
+    /* Lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#000}
+
+    /* Sélection + formulaires */
     .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
     .sel-teams{font-weight:900}
     .mini{padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;border:none;font-weight:800}
@@ -120,11 +117,10 @@
     .ok{color:var(--ok)} .err{color:var(--err)}
     footer{margin-top:12px;text-align:center}
 
-    /* Mobile : s'assurer que tout reste visible et lisible */
+    /* Mobile */
     @media (max-width: 420px){
-      .match-card{grid-template-columns:64px 1fr; }
+      .match-card{grid-template-columns:64px 1fr auto}
       .right{grid-column:1 / -1; justify-content:flex-start}
-      .chip-id{order:3}
     }
   </style>
 </head>
@@ -161,7 +157,6 @@
           <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
         </label>
 
-        <!-- Sélecteur d'état de match -->
         <label>État du match
           <select name="etat_match" id="etat_match" required>
             <option value="termine" selected>Terminé</option>
@@ -179,7 +174,6 @@
           </label>
         </div>
 
-        <!-- Temps de jeu si "En cours" -->
         <div class="row one" id="temps_wrapper" hidden>
           <label>Temps de jeu (minutes)
             <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
@@ -230,6 +224,11 @@
     </div>
   </div>
 
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Agrandissement photo">
+    <img id="lightboxImg" alt="">
+  </div>
+
   <script>
     // ======== CONFIGURATION ========
     const CONFIG = {
@@ -254,7 +253,8 @@
         eq2score:'Eq2Score',
         winlose:'WinLose',
         gymnase:'Gymnase',
-        ville:'Ville'
+        ville:'Ville',
+        photo:'PhotoEq'              // << nouvelle colonne pour miniature
       },
       clubAliases: ['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
       dateWindow: { pastDays: 5, futureDays: 2 },
@@ -270,6 +270,8 @@
     function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
     function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
     function extFrom(type,fallback){ if(!type) return fallback||'jpg'; if(type==='image/jpeg')return'jpg'; if(type==='image/png')return'png'; if(type==='image/webp')return'webp'; if(type==='image/heic'||type==='image/heif')return'heic'; return fallback||'jpg'; }
+    function isUrl(u){ try{ new URL(u); return true; }catch{ return false; } }
+
     function parseDateFR(val){ if(!val) return null; const m=String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){ const d=m[1].padStart(2,'0'), mo=m[2].padStart(2,'0'), y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);} const d=new Date(val); return isNaN(d)?null:d;}
     function parseDateTimeFR(dateStr,timeStr){ const d=parseDateFR(dateStr); if(!d) return null; const [h='00',m='00']=String(timeStr||'00:00').split(':'); const dt=new Date(d); dt.setHours(parseInt(h,10)||0, parseInt(m,10)||0, 0, 0); return dt; }
     function fmtDate(d){ return d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):''; }
@@ -286,6 +288,8 @@
     const selTeams=document.getElementById('selTeams');
     const selMeta=document.getElementById('selMeta');
     const changeBtn=document.getElementById('changeBtn');
+    const lightbox=document.getElementById('lightbox');
+    const lightboxImg=document.getElementById('lightboxImg');
 
     // ---- Lecture CSV + groupe/tri ----
     async function loadMatches(){
@@ -305,13 +309,15 @@
           const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
           const e1label=(e1+(e1x?` ${e1x}`:'' )).trim();
           const e2label=(e2+(e2x?` ${e2x}`:'' )).trim();
+          const photo=(r[idx[L.photo]]||'').trim();
           return {
             match_id:r[idx[L.match_id]],
             date_str:d, heure_str:h, _date:dt,
             categorie:r[idx[L.categorie]], championnat:r[idx[L.championnat]],
             equipe1:e1label, equipe2:e2label,
             eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]],
-            winlose:r[idx[L.winlose]], gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]]
+            winlose:r[idx[L.winlose]], gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]],
+            photo: isUrl(photo)? photo : ''
           };
         }).filter(x=>x&&x.match_id);
 
@@ -342,12 +348,12 @@
       const now=new Date(); if(!m._date||!sameDay(m._date,now)||now<m._date) return null;
       if (isFinished(m.winlose)) return null;
       const mins=Math.floor((now-m._date)/60000);
-      return mins<=CONFIG.liveThresholdMin?{type:'live',label:'LIVE'}:{type:'wait',label:'Attente score'};
+      return mins<=CONFIG.liveThresholdMin?{type:'live',label:'LIVE'}:{type:'wait',label:'Attente score final'};
     }
     function scorePieces(m){
       const s1 = (m.eq1score!==undefined && m.eq1score!==null && String(m.eq1score).trim()!=='') ? m.eq1score : null;
       const s2 = (m.eq2score!==undefined && m.eq2score!==null && String(m.eq2score).trim()!=='') ? m.eq2score : null;
-      return {s1,s2,text:(s1!==null && s2!==null)?`${s1}–${s2}`:''};
+      return {s1,s2};
     }
     function groupByDay(list){
       const groups={};
@@ -390,8 +396,16 @@
           const rightBits=[];
           if (badge && badge.type==='live') rightBits.push(`<span class="chip chip-live"><span class="dot"></span> ${badge.label}</span>`);
           if (badge && badge.type==='wait') rightBits.push(`<span class="chip chip-wait">${badge.label}</span>`);
-          if (s.text) rightBits.push(`<span class="chip chip-score">${s.text}</span>`);
+          // ❌ plus de chip de score combiné
           rightBits.push(`<span class="chip chip-id">${m.match_id}</span>`);
+          if (m.photo) {
+            rightBits.push(`
+              <span class="thumb-wrap">
+                <button class="thumb-btn" data-photo="${m.photo}" aria-label="Agrandir la photo" onclick="event.stopPropagation();openLightbox('${m.photo}')">
+                  <img class="thumb" src="${m.photo}" alt="Photo du match">
+                </button>
+              </span>`);
+          }
 
           card.innerHTML=`
             <div class="time-box">${fmtTime(m._date)}</div>
@@ -421,7 +435,13 @@
       container.appendChild(frag);
     }
 
-    // ---- Sélection + formulaires (inchangé côté logique) ----
+    // ---- Lightbox ----
+    function openLightbox(src){ lightboxImg.src=src; lightbox.classList.add('open'); }
+    function closeLightbox(){ lightbox.classList.remove('open'); lightboxImg.src=''; }
+    lightbox.addEventListener('click', closeLightbox);
+    window.openLightbox=openLightbox; // pour l'inline onclick
+
+    // ---- Sélection + formulaires ----
     const labelDom=document.getElementById('label_dom');
     const labelExt=document.getElementById('label_ext');
     const inputId=document.getElementById('match_id');
@@ -461,9 +481,7 @@
       document.getElementById('match_id').value=m.match_id||'';
       setTeamLabels(m.equipe1,m.equipe2);
       computeResult();
-      // état par défaut selon badge
-      if (badge && (badge.type==='live' || badge.type==='wait')) etatEl.value='en_cours';
-      else etatEl.value='termine';
+      if (badge && (badge.type==='live' || badge.type==='wait')) etatEl.value='en_cours'; else etatEl.value='termine';
       toggleTempsByEtat();
       togglePhotoForm(isFinished(m.winlose), m);
       document.getElementById('f').scrollIntoView({behavior:'smooth',block:'start'});
