@@ -48,10 +48,15 @@
     .team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;min-width:0}
     .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
     .team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
-    .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
-    .meta .category{color:var(--accent);font-weight:900;font-size:14px}
-    .meta .other{color:var(--muted)}
-    .right{display:flex;align-items:center;gap:8px;justify-self:end;flex-wrap:wrap}
+
+    /* nouvelles lignes méta + style renforcé catégorie */
+    .meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .meta-cat{color:var(--accent);font-weight:900;font-size:16px}
+    .meta-place{color:var(--muted);font-size:13px}
+
+    /* colonne droite en pile (pastilles au-dessus, photo en dessous) */
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;justify-self:end}
+
     .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--text)}
     .chip-live{background:#ffe4e2;border-color:#ffc6c2;color:#a41911}
     .chip-wait{background:#fff1cf;border-color:#ffe29b;color:#6d4e00}
@@ -89,7 +94,7 @@
 
     @media (max-width:420px){
       .match-card{grid-template-columns:64px 1fr auto}
-      .right{grid-column:1 / -1; justify-content:flex-start}
+      .right{grid-column:1 / -1; align-items:flex-start}
     }
     /* Lightbox */
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50}
@@ -211,7 +216,7 @@
       gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
       fields:{
         match_id:'Code Gesthand', date:'Date', heure:'Heure',
-        categorie:'Catégorie', championnat:'Championnat',
+        categorie:'Catégorie', genre:'Genre', championnat:'Championnat',
         equipe1:'Eq1', equipe1x:'Eq1X', equipe2:'Eq2', equipe2x:'Eq2X',
         eq1score:'Eq1Score', eq2score:'Eq2Score', winlose:'WinLose',
         gymnase:'Gymnase', ville:'Ville', photo:'PhotoEq'
@@ -266,7 +271,8 @@
           const photo=(r[idx[L.photo]]||'').trim();
           return {
             match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
-            categorie:r[idx[L.categorie]], championnat:r[idx[L.championnat]],
+            categorie:r[idx[L.categorie]], genre:r[idx[L.genre]] || '',
+            championnat:r[idx[L.championnat]],
             equipe1:e1label, equipe2:e2label,
             eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]],
             winlose:r[idx[L.winlose]], gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]],
@@ -329,10 +335,7 @@
           chips.push(`<span class="chip">${label}</span>`);
         }
       }
-      // on n'affiche plus l'ID ici (déplacé sous l'heure)
-      if (m.photo){
-        chips.push(`<span class="thumb-wrap"><button class="thumb-btn" data-photo="${m.photo}" aria-label="Agrandir la photo" onclick="event.stopPropagation();openLightbox('${m.photo}')"><img class="thumb" src="${m.photo}" alt="Photo du match"></button></span>`);
-      }
+      // ⚠️ plus de photo ici : elle est affichée sous les pastilles (colonne droite)
       return chips.join('');
     }
 
@@ -387,14 +390,17 @@
                 <div class="team-name">${(m.equipe2||'').trim()}</div>
                 <div class="team-score">${s2!==null ? s2 : ''}</div>
               </div>
-              <div class="meta">
-                ${m.categorie?`<span class="category">${m.categorie}</span>`:''}
-                ${m.championnat?`<span class="other">${m.championnat}</span>`:''}
-                ${m.ville?`<span class="other">${m.ville}</span>`:''}
-                ${m.gymnase?`<span class="other">${m.gymnase}</span>`:''}
+              <div class="meta-line">
+                ${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}
+              </div>
+              <div class="meta-line">
+                ${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}
               </div>
             </div>
-            <div class="right">${rightChipsForMatch(m)}</div>`;
+            <div class="right">
+              ${rightChipsForMatch(m)}
+              ${m.photo ? `<span class="thumb-wrap"><button class="thumb-btn" data-photo="${m.photo}" aria-label="Agrandir la photo" onclick="event.stopPropagation();openLightbox('${m.photo}')"><img class="thumb" src="${m.photo}" alt="Photo du match"></button></span>` : ``}
+            </div>`;
           card.addEventListener('click',()=>selectMatch(m));
           listEl.appendChild(card);
         });
