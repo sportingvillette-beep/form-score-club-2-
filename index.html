@@ -241,7 +241,7 @@
     function fmtDate(d){return d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'';}
     function fmtTime(d){return d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';}
     function sameDay(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
-    function inWindow(d){const base=new Date(); base.setHours(0,0,0,0); const s=new Date(base); s.setDate(s.getDate()-(CONFIG.dateWindow.pastDays||5)); const e=new Date(base); e.setDate(e.getDate()+(CONFIG.dateWindow.futureDays||2)); return d>=s && d<=e;}
+    function inWindow(d){const base=new Date(); base.setHours(0,0,0,0); const s=new Date(base); s.setDate(s.getDate()-(CONFIG.dateWindow.pastDays|2)); const e=new Date(base); e.setDate(e.getDate()+(CONFIG.dateWindow.futureDays||5)); return d>=s && d<=e;}
     function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++]; if(c==='"'){if(q && csv[i]==='"'){f+='"';i++;} else q=!q;} else if(c===',' && !q){cur.push(f);f='';} else if((c==='\n'||c==='\r') && !q){ if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';} } else f+=c;} if(f!==''||cur.length){cur.push(f);rows.push(cur);} return rows.filter(r=>r.length&&r.join('').trim()!=='');}
 
     const matchesMsg=document.getElementById('matchesMsg');
